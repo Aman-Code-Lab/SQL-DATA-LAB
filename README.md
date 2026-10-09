@@ -1,4 +1,4 @@
-#🚀 SQL-DATA-LAB
+# 🚀 SQL-DATA-LAB
 
 **•👋 Introduction to SQL & RDBMS:** Core relational modeling rules, database advantages, and organizing unstructured data into structured Tables, Rows, and Columns.
 
