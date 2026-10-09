@@ -1,8 +1,15 @@
-# SQL-DATA-LAB
-**• Introduction to SQL & RDBMS:** SQL Basics, advantages, architectural rules, aur data ko tables, rows aur columns mein organize karna.
-**• System Databases:** SQL Server ke engine ko chalane wali default databases ka conceptual usage: master, model, msdb, aur tempdb.
-**• SQL Commands Classification:** Structure aur records ko secure karne wale main frameworks: DDL, DML, DQL, DCL, aur TCL.
-**• Database & Table Management:** Primary operations jaise CREATE, ALTER, DROP database aur tables banana.
-**• SQL Data Types:** Sahi data size choose karne ke liye formats: Numeric (INT, BIGINT), String (VARCHAR, NVARCHAR), Date & Time, aur Binary datatypes.
-**• Data Constraints:** Database mein kachra data rokne ke rules: NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT, aur IDENTITY (Auto-increment).
-**• SQL Operators:** Queries par execution chalane wale symbols: Arithmetic, Comparison (=, !=, <>), Logical (AND, OR, NOT), aur Special operators (LIKE, BETWEEN, IN, EXISTS).
+#🚀 SQL-DATA-LAB
+**•👋 Introduction to SQL & RDBMS:** Core relational modeling rules, database advantages, and organizing unstructured data into structured Tables, Rows, and Columns.
+
+**•⚙️🛢️ System Databases:** Understanding the native, pre-installed engine databases essential for SQL Server management: master, model, msdb, and tempdb.
+
+**• ⌨️⚡SQL Commands Classification:** Deep-dive configuration into the structural statement categories: DDL, DML, DQL, DCL, and TCL.
+
+**• 🛢️📜Database & Table Management:** Primary administrative storage mechanics including the instantiation and destruction of components using CREATE, ALTER, and DROP statements.
+
+**•🔢 SQL Data Types:** Choosing optimal byte sizes for accurate storage indexing: Numeric (INT, BIGINT, DECIMAL), String (CHAR, VARCHAR, NVARCHAR), Date & Time, and Binary variants.
+
+**•📦 Data Constraints:** Hardcoded gatekeeper validation checks to block garbage input values: NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT, and IDENTITY (Auto-increment).
+
+**• 🛢️🔍🔀 SQL Operators:** Computational mathematical and filtration expression operators: Arithmetic, Comparison (=, !=, <>), Logical (AND, OR, NOT), and Special Operators (LIKE, BETWEEN, IN, EXISTS).
+
