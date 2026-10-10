@@ -453,3 +453,99 @@ SELECT * FROM Employees
 WHERE HireDate >= '2022-01-01' AND HireDate < '2023-01-01';
 
 GO
+-- ============================================================================
+-- 📌 MODULE 14: UPSERT & DATA SYNCHRONIZATION (MERGE STATEMENT)
+-- ============================================================================
+
+-- Staging table simulation
+CREATE TABLE Staging_Employees (
+    EmpID INT,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Salary DECIMAL(10,2)
+);
+
+INSERT INTO Staging_Employees VALUES 
+(101, 'Aman', 'TRIPA', 135000.00), -- Updated salary
+(999, 'Karan', 'Johar', 80000.00);  -- New employee
+
+-- Atomic Merge operation
+MERGE Employees AS Target
+USING Staging_Employees AS Source
+ON (Target.EmpID = Source.EmpID)
+WHEN MATCHED THEN
+    UPDATE SET Target.Salary = Source.Salary
+WHEN NOT MATCHED BY TARGET THEN
+    INSERT (FirstName, LastName, Salary)
+    VALUES (Source.FirstName, Source.LastName, Source.Salary);
+
+DROP TABLE Staging_Employees;
+GO
+
+-- ============================================================================
+-- 📌 MODULE 15: DATA RESHAPING (PIVOT & UNPIVOT)
+-- ============================================================================
+
+-- 1. PIVOT: Rows to Columns (Department count per location)
+SELECT Location, [Engineering], [Marketing], [Finance]
+FROM (
+    SELECT d.Location, d.DeptName, e.EmpID
+    FROM Employees e
+    INNER JOIN Departments d ON e.DeptID = d.DeptID
+) AS SourceTable
+PIVOT (
+    COUNT(EmpID)
+    FOR DeptName IN ([Engineering], [Marketing], [Finance])
+) AS PivotTable;
+
+GO
+
+-- ============================================================================
+-- 📌 MODULE 16: PROCEDURAL CURSORS (ROW-BY-ROW FETCHING)
+-- ============================================================================
+
+DECLARE @EmpName VARCHAR(100);
+DECLARE @EmpSal DECIMAL(10,2);
+
+-- 1. Declare cursor
+DECLARE EmployeeCursor CURSOR FOR
+SELECT FirstName + ' ' + LastName, Salary FROM Employees;
+
+-- 2. Open & Fetch
+OPEN EmployeeCursor;
+FETCH NEXT FROM EmployeeCursor INTO @EmpName, @EmpSal;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    PRINT 'Processing employee: ' + @EmpName + ' | Salary: ' + CAST(@EmpSal AS VARCHAR(20));
+    FETCH NEXT FROM EmployeeCursor INTO @EmpName, @EmpSal;
+END;
+
+-- 3. Close & Deallocate
+CLOSE EmployeeCursor;
+DEALLOCATE EmployeeCursor;
+GO
+
+-- ============================================================================
+-- 📌 MODULE 17: SEMI-STRUCTURED DATA (JSON EXTRACTION)
+-- ============================================================================
+
+-- 1. Tabular data to JSON export
+SELECT EmpID, FirstName, Salary
+FROM Employees
+FOR JSON PATH, ROOT('EmployeeRecords');
+
+-- 2. JSON parsing back to relational rows
+DECLARE @jsonPayload NVARCHAR(MAX) = N'[
+    {"EmpID": 201, "Name": "Rohan", "Role": "Data Engineer"},
+    {"EmpID": 202, "Name": "Simran", "Role": "Analyst"}
+]';
+
+SELECT *
+FROM OPENJSON(@jsonPayload)
+WITH (
+    EmpID INT '$.EmpID',
+    Name VARCHAR(50) '$.Name',
+    Role VARCHAR(50) '$.Role'
+);
+GO
