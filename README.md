@@ -221,44 +221,43 @@ Scalable transactional backends (OLTP) se high-throughput analytical warehouses 
 * **Fact Tables:** Central quantitative business event metrics (sales amounts, units sold, call durations).
 * **Dimension Tables:** Surrounding descriptive context hierarchies (customer profiles, store locations, calendar periods).
 
-
 # 🛡️ Data Security, Auditing & Access Control (DCL Deep-Dive)
 
-Database security, user governance aur enterprise data masking ke core rules:
+Core principles of database security, user governance, and enterprise data masking:
 
-* 🔐 **Authentication vs. Authorization:** Server-level logins (Windows Authentication, SQL Authentication) aur Database-level users ke beech ka physical separation.
-* 🛡️ **Role-Based Access Control (RBAC):** Built-in fixed roles (`db_owner`, `db_datareader`, `db_datawriter`) aur customized application roles define karna.
+* 🔐 **Authentication vs. Authorization:** Physical architectural separation between Server-level Logins (Windows Authentication, SQL Authentication) and Database-level Users.
+* 🛡️ **Role-Based Access Control (RBAC):** Implementing built-in fixed database roles (`db_owner`, `db_datareader`, `db_datawriter`) alongside custom application-defined security roles.
 * 🚦 **Privilege Hierarchy (`GRANT`, `REVOKE`, `DENY`):**
-* `GRANT`: Specific table ya schema level read/write permissions allocate karna.
-* `REVOKE`: Pehle se di gayi permissions ko remove karna.
-* `DENY`: Explicit block lagana (jo kisi bhi inherited group permission ko override kar deta hai).
+* `GRANT`: Allocates explicit read/write/execute permissions at the database, schema, or object level.
+* `REVOKE`: Removes previously granted permissions.
+* `DENY`: Imposes an explicit override block that supersedes any inherited group or role permissions.
 
 
-* 🎭 **Dynamic Data Masking (DDM):** Sensitive user data (Credit Card numbers, PII, Email IDs) ko non-privileged users ke liye query-level par automate karke obscure karna (`xxxx-xxxx-xxxx-1234`).
+* 🎭 **Dynamic Data Masking (DDM):** Obfuscating sensitive fields (Credit Card numbers, PII, Email IDs) at the query presentation layer for non-privileged users (`xxxx-xxxx-xxxx-1234`).
 
 ---
 
 # 🧱 Sharding, Partitioning & Scalability Mechanics
 
-Massive scale datasets (terabytes/petabytes) ko horizontally split aur manage karne ke architectural concepts:
+Architectural patterns for horizontally splitting, optimizing, and scaling high-volume datasets (Terabytes/Petabytes):
 
-* 🗂️ **Table Partitioning (Horizontal Splitting):** Single table ke large data pages ko background filegroups mein distribute karna (e.g., Year/Date range ke basis par partitions banana) taaki query execution mein *Partition Elimination/Pruning* ka fayda mile.
-* ✂️ **Vertical Partitioning:** Rarely used columns (large text, BLOBs) ko alag tables mein split karke memory I/O footprint kam karna.
-* 🌐 **Database Sharding:** Data ko multiple physical database servers/nodes par hash keys ya geographic regions ke basis par distribute karna.
-* 🔄 **Replication & High Availability (HA):** Primary read-write nodes aur dedicated read-only replicas ka setup taaki reporting analytics production operational OLTP workload ko slow na kare.
+* 🗂️ **Horizontal Table Partitioning:** Distributing massive underlying data pages across distinct filegroups (e.g., date ranges or tenant IDs) to maximize performance via *Partition Elimination / Pruning*.
+* ✂️ **Vertical Partitioning:** Decoupling rarely queried, heavy payload attributes (BLOBs, large text chunks) into auxiliary tables to streamline memory and buffer pool I/O footprints.
+* 🌐 **Database Sharding:** Horizontally distributing discrete data partitions across independent physical database instances using hash or range keys.
+* 🔄 **Replication & High Availability (HA):** Deploying primary read-write instances paired with dedicated read-only replicas to isolate analytical and reporting workloads from transactional OLTP traffic.
 
 ---
 
 # ⏳ Temporal Tables & Slowly Changing Dimensions (SCD)
 
-Historical audit logs aur analytical point-in-time point changes ko track karne ke design patterns:
+Core data warehousing design patterns for capturing audit histories and point-in-time state changes:
 
-* ⏱️ **System-Versioned Temporal Tables:** Database engine level par automated valid-from aur valid-to timestamps ke sath historical data maintain karna (`FOR SYSTEM_TIME AS OF`).
-* 📊 **SCD Types (Data Warehousing Standard):**
-* **SCD Type 0:** Fixed original values (e.g., Original Date of Birth, kabhi update nahi hoti).
-* **SCD Type 1:** Purana data overwrite kar dena (No history tracking).
-* **SCD Type 2:** Har attribute update par nayi row create karna with active flags aur date ranges (Complete historical audit tracking).
-* **SCD Type 3:** Purani value ko preserve karne ke liye alag se "Previous_Value" column add karna.
+* ⏱️ **System-Versioned Temporal Tables:** Engine-managed historical versioning that automatically stamps valid-from and valid-to intervals (`FOR SYSTEM_TIME AS OF`).
+* 📊 **SCD Classification (Data Warehousing Standard):**
+* **SCD Type 0:** Retains static, immutable baseline values (e.g., original birth dates).
+* **SCD Type 1:** Directly overwrites existing attributes with current values (no historical lineage preserved).
+* **SCD Type 2:** Appends a new immutable record with explicit active flags and validity date ranges on every attribute mutation (complete historical tracking).
+* **SCD Type 3:** Preserves prior states by provisioning dedicated historical tracking columns (e.g., `previous_value`).
 
 
 
@@ -266,9 +265,69 @@ Historical audit logs aur analytical point-in-time point changes ko track karne 
 
 # 🗃️ Semi-Structured Data Handling (JSON & XML in SQL)
 
-Modern backend APIs aur NoSQL document structures ke sath relational SQL ka integration:
+Integrating modern REST APIs and document payloads within relational database engines:
 
-* 📄 **JSON Serialization & Extraction:** Relational rows ko JSON payloads mein export karna (`FOR JSON PATH`) aur runtime parsing functions (`JSON_VALUE`, `JSON_QUERY`).
-* 🔍 **JSON Arrays Unnesting (`OPENJSON`):** Multi-nested JSON objects ko tabular relational rows aur columns mein explode karna.
-* 📑 **XML Parsing:** Semi-structured hierarchical tags ko extract aur query karna using `.nodes()` aur `.value()` XQuery methods.
+* 📄 **JSON Serialization & Extraction:** Serializing tabular rows into JSON payloads (`FOR JSON PATH`) and extracting scalar variables using runtime parsers (`JSON_VALUE`, `JSON_QUERY`).
+* 🔍 **JSON Array Unnesting (`OPENJSON`):** Exploding nested JSON arrays and objects into standard relational tables with defined schemas.
+* 📑 **XML Parsing:** Querying and transforming hierarchical XML schemas into tabular structures via `.nodes()` and `.value()` XQuery methods.
+
+---
+
+# 🔄 Upsert & ETL Synchronization (`MERGE` Statement)
+
+Atomic data synchronization for ETL pipelines and data warehouses:
+
+* 🔀 **Atomic Dual-Action Operations (`MERGE INTO`):** Evaluates a Target table against a Source dataset on defined primary/business keys in a single atomic transaction.
+* ⚡ **Branch Execution Criteria:**
+* `WHEN MATCHED THEN UPDATE`: Synchronizes modified non-key attributes on existing records.
+* `WHEN NOT MATCHED [BY TARGET] THEN INSERT`: Appends new records into the target table.
+* `WHEN NOT MATCHED BY SOURCE THEN DELETE`: Purges records absent from the incoming source pipeline.
+
+
+* 🛡️ **Race Condition Elimination:** Prevents concurrency race conditions and deadlocks typical of disjointed `IF EXISTS ... UPDATE ELSE INSERT` control flows.
+
+---
+
+# 🔲 Data Reshaping & Crosstab Metrics (`PIVOT` & `UNPIVOT`)
+
+Matrix-style transformations for cross-tabulation reporting and schema normalization:
+
+* 📊 **Cross-Tabulation (`PIVOT`):** Transforms normalized row entries into distinct column attributes alongside statistical aggregations (e.g., transposing monthly sales rows into horizontal reporting columns).
+* 🔄 **Matrix Normalization (`UNPIVOT`):** Collapses wide dimensional columns back into standardized row tuples to adhere to relational database normalization rules.
+* 🔀 **Dynamic PIVOT:** Generating and executing parameterized dynamic SQL queries to handle variable, expanding category columns at runtime.
+
+---
+
+# 🎯 Execution Mechanics: Set-Based Engine vs. Cursors
+
+Comparative analysis between procedural iteration and relational set-based operations:
+
+* 🐌 **Procedural Cursors Lifecycle:**
+* Execution lifecycle: `DECLARE` -> `OPEN` -> `FETCH NEXT` (iterative loop) -> `CLOSE` -> `DEALLOCATE`.
+* Introduces high memory pressure, locks data pages sequentially, and scales poorly on high-volume datasets.
+
+
+* ⚡ **Set-Based Processing Paradigm:**
+* Allows the cost-based query optimizer to process datasets simultaneously using vectorized matrix evaluation.
+* Maximizes index seeks, parallel thread utilization (`MAXDOP`), and cache reuse.
+
+
+* ⚖️ **Valid Cursor Use Cases:** Strictly reserved for batch administrative tasks, database maintenance, or executing isolated stored procedures row-by-row.
+
+---
+
+# 🔎 Full-Text Search (FTS) & Advanced Linguistic Indexing
+
+High-performance text indexing engines for semi-structured text catalogs and large document fields:
+
+* 📇 **Inverted Index Catalog Architecture:** Tokenizes text into word-based inverted catalogs while stripping out stop-words/noise words—architecturally distinct from standard B-Tree indexes.
+* 🚫 **Bypassing Leading-Wildcard Bottlenecks:**
+* Bypasses full table scans typically triggered by leading wildcards (`LIKE '%keyword%'`).
+* Enables sub-second retrieval across millions of textual records.
+
+
+* 🧠 **Linguistic Predicate Operators:**
+* `CONTAINS`: Evaluates exact terms, inflected forms (e.g., *run*, *running*, *ran*), prefix matching, and proximity distances (`NEAR`).
+* `FREETEXT`: Performs natural language context matching by parsing meanings, synonyms, and thesaurus variations.
+
 
