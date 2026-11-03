@@ -1,333 +1,489 @@
 # 🚀 SQL-DATA-LAB
 
-## basic concept of SQL 
+A hands-on SQL learning lab, from first `SELECT` to indexing, transactions and data warehousing concepts. Every topic has runnable **T-SQL (SQL Server)** code, and a practice section at the end lets you test yourself.
 
-**•👋 Introduction to SQL & RDBMS:** Core relational modeling rules, database advantages, and organizing unstructured data into structured Tables, Rows, and Columns.
-
-**•⚙️🛢️ System Databases:** Understanding the native, pre-installed engine databases essential for SQL Server management: master, model, msdb, and tempdb.
-
-**• ⌨️⚡SQL Commands Classification:** Deep-dive configuration into the structural statement categories: DDL, DML, DQL, DCL, and TCL.
-
-**• 🛢️📜Database & Table Management:** Primary administrative storage mechanics including the instantiation and destruction of components using CREATE, ALTER, and DROP statements.
-
-**•🔢 SQL Data Types:** Choosing optimal byte sizes for accurate storage indexing: Numeric (INT, BIGINT, DECIMAL), String (CHAR, VARCHAR, NVARCHAR), Date & Time, and Binary variants.
-
-**•📦 Data Constraints:** Hardcoded gatekeeper validation checks to block garbage input values: NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, DEFAULT, and IDENTITY (Auto-increment).
-
-**• 🛢️🔍🔀 SQL Operators:** Computational mathematical and filtration expression operators: Arithmetic, Comparison (=, !=, <>), Logical (AND, OR, NOT), and Special Operators (LIKE, BETWEEN, IN, EXISTS).
-
-# ⚡ Advanced SQL Queries
-
-This functional query-building layer deals with parsing, filtering, and running complex analytical workflows across multi-layered business metrics:
-
-* 🧩 **SQL Clauses:** Segmenting database operations using precise condition evaluation modifiers: `FROM`, `WHERE`, `GROUP BY`, `HAVING`, `ORDER BY`, and `TOP` / `LIMIT`.
-* 🔄 **Logical Order of Query Evaluation:** Mastering the exact algorithmic phase-sequence the SQL compilation engine utilizes back-end to parse query tokens (e.g., executing `FROM` and `WHERE` before evaluating `SELECT`).
-* 📊 **Aggregate Functions:** Performing cross-row vector calculations to extract localized statistical summaries: `COUNT()`, `SUM()`, `AVG()`, `MIN()`, and `MAX()`.
-* 🔗 **Joins (Critical Core Skill):** Merging multiple distinct tables together across overlapping validation records using `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, and `FULL OUTER JOIN` structures.
-* 📦 **Subqueries & Nested Statements:** Compiling and embedding complete internal query expressions inside parent operation statements.
-* ⚙️ **Built-in Functions:** Formatting data variables directly on the server layer using standard scalar, mathematical, string, and date utility functions.
-* 🔍 **SQL Wildcards & Pattern Scanning:** Utilizing fluid text token characters (such as `%` or `_`) to search through wide text columns.
-* 🛡️ **SQL Transactions:** Safeguarding transaction durability, consistency, and isolation using structural recovery boundaries: `COMMIT`, `ROLLBACK`, and `SAVEPOINT`.
-
-# 🔗 Multi-Table Relational Modeling & Joins Architecture
-
-Relational databases mein normalized schemas se analytical views aur unified records construct karne ke liye multi-table integration layer:
-
-* 🔀 **Relational Integrity & Join Predicates:** Primary Key to Foreign Key association matrix rules jo relational normalization form (1NF to 3NF) maintain karti hain.
-* 🎯 **INNER JOIN:** Emitting strictly intersected records where foreign key equals referenced primary key (`ON a.id = b.id`), filtering non-matching orphan rows.
-* ⬅️ **LEFT (OUTER) JOIN:** Complete preservation of base/parent driving dataset (`FROM Table_A`) while projecting matched attributes from secondary tables, substituting absent attributes with persistent `NULL` states.
-* ➡️ **RIGHT (OUTER) JOIN:** Inverse outer persistence prioritized towards the dependent dataset, maintaining lookup tables with optional parent linkages.
-* 🌐 **FULL OUTER JOIN:** Dual-directional union-style join extracting both matched and unmatched entities across both sides for reconciling database audit mismatches.
-* ✖️ **CROSS JOIN (Cartesian Product):** Unconstrained matrix permutation producing $N \times M$ output rows, used in creating master planning templates, calendar schedules, and product SKU variations.
-* 🔄 **SELF JOIN:** Unary hierarchical referencing where a table joins against its own alias schema (essential for Manager-Employee hierarchy trees, assembly bill-of-materials, and sequential log tracking).
+> **Dialect:** T-SQL (SQL Server 2016 SP1 or newer). Most querying topics also work in PostgreSQL and MySQL; differences are listed in [Dialect cheat sheet](#dialect-cheat-sheet).
 
 ---
 
-# 📦 Advanced Filtering, Grouping & Subqueries
+## Table of contents
 
-Analytical metrics aggregation aur complex conditional partitioning ke core mechanisms:
-
-* 🗂️ **Multi-Column GROUP BY & Aggregation:** Structuring dimensional cubes across non-aggregated categorical variables paired with statistical vectors (`SUM`, `AVG`, `COUNT`, `MIN`, `MAX`).
-* ⚖️ **Execution Boundary: WHERE vs. HAVING:** Enforcing strict pre-aggregation filtering via index-compatible `WHERE` vs. post-aggregation partition pruning via `HAVING`.
-* 📥 **Scalar Subqueries:** Single-value returning internal expressions evaluated dynamically within `SELECT`, `WHERE`, or conditional assignment pipelines.
-* 📋 **Multi-Row Subqueries:** Evaluating list arrays using vectorized predicate operators: `IN`, `NOT IN`, `ANY`, `ALL`, aur boolean presence via `EXISTS` / `NOT EXISTS`.
-* 🔁 **Correlated Subqueries:** Row-by-row context-dependent subqueries referencing attributes from outer parent loops, executing dynamically per candidate row.
+- [Quick start](#quick-start)
+- [Repository structure](#repository-structure)
+- [Sample database](#sample-database)
+- [1. Fundamentals](#1-fundamentals)
+- [2. Querying data](#2-querying-data)
+- [3. Advanced querying](#3-advanced-querying)
+- [4. Programmability](#4-programmability)
+- [5. Performance and indexing](#5-performance-and-indexing)
+- [6. Transactions and concurrency](#6-transactions-and-concurrency)
+- [7. Data modeling and architecture](#7-data-modeling-and-architecture)
+- [8. Security](#8-security)
+- [9. Extra topics with examples](#9-extra-topics-with-examples)
+- [10. Common pitfalls](#10-common-pitfalls)
+- [Dialect cheat sheet](#dialect-cheat-sheet)
+- [11. Practice questions](#11-practice-questions)
+- [Learning roadmap](#learning-roadmap)
+- [Contributing and license](#contributing-and-license)
 
 ---
 
-# 🛠️ Built-in Functions & Procedural Transformations
+## Quick start
 
-Server-side dynamic data cleanup, type casting, mathematical operations, aur conditional logic:
+**Requirements:** SQL Server 2016 SP1+ (Developer or Express edition is free) and SQL Server Management Studio (SSMS) or Azure Data Studio.
 
-* 🔤 **String Manipulation Engine:** Transforming raw user input and text records via `UPPER()`, `LOWER()`, `SUBSTRING()`, `CONCAT()`, `LTRIM()`, `RTRIM()`, `CHARINDEX()`, aur `REPLACE()`.
-* 📐 **Mathematical & Rounding Functions:** Precision management in financial ledgers using `ROUND()`, `FLOOR()`, `CEILING()`, `ABS()`, aur `POWER()`.
-* 📅 **Date & Time Pipelines:** Managing timestamps, retention limits, and SLA intervals using `GETDATE()`, `DATEDIFF()`, `DATEADD()`, `DATEPART()`, aur `DATENAME()`.
-* 🔀 **Conditional Business Logic (`CASE WHEN`):** Embedded runtime branching enabling dynamic segmentations, pivot-style reporting, and categorizations directly inside projections:
-```sql
-CASE 
-    WHEN salary >= 100000 THEN 'Executive Tier'
-    WHEN salary >= 60000  THEN 'Mid-Level Tier'
-    ELSE 'Associate Tier'
-END AS compensation_band
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/Aman-Code-Lab/SQL-DATA-LAB.git
+   ```
+2. Open `scripts/master_sql_commands.sql` in SSMS.
+3. Run the whole script (**F5**). It creates the `TechCorpDB` database, loads sample data and runs every module.
+4. The script is **re-runnable**: it drops and recreates its tables each time.
+5. To study one topic, run only that module. Each module starts with a banner comment such as `MODULE 05`.
 
+---
+
+## Repository structure
+
+```text
+SQL-DATA-LAB/
+├── README.md                      <- you are here
+└── scripts/
+    └── master_sql_commands.sql    <- 17 runnable modules (see table below)
 ```
 
+| Script module | Topic | Section in this README |
+|---|---|---|
+| 01 | Database and schema management (DDL) | [1](#1-fundamentals) |
+| 02 | Insert, update, delete (DML) | [1](#1-fundamentals) |
+| 03 | Filtering and wildcards | [2](#2-querying-data) |
+| 04 | Aggregates and grouping | [2](#2-querying-data) |
+| 05 | Joins (all variants) | [2](#2-querying-data) |
+| 06 | Subqueries | [2](#2-querying-data) |
+| 07 | Built-in functions and `CASE` | [2](#2-querying-data) |
+| 08 | Window functions | [3](#3-advanced-querying) |
+| 09 | CTEs (standard and recursive) | [3](#3-advanced-querying) |
+| 10 | Set operators | [3](#3-advanced-querying) |
+| 11 | Procedures, functions, triggers | [4](#4-programmability) |
+| 12 | Transaction control | [6](#6-transactions-and-concurrency) |
+| 13 | Indexing and sargability | [5](#5-performance-and-indexing) |
+| 14 | `MERGE` (upsert) | [9](#9-extra-topics-with-examples) |
+| 15 | `PIVOT` | [9](#9-extra-topics-with-examples) |
+| 16 | Cursors | [4](#4-programmability) |
+| 17 | JSON | [9](#9-extra-topics-with-examples) |
 
-* 🛡️ **Null Handling & Defensiveness:** Preventing downstream application runtime errors via `ISNULL()`, `COALESCE()`, aur `NULLIF()`.
-
----
-
-# 👁️ Views, Security & Physical Storage Abstraction
-
-Production databases mein tables ko directly expose na karke secure, high-performance interfaces build karna:
-
-* 🪟 **Standard Views (`CREATE VIEW`):** Pre-compiled query wrappers simplifying complex nested joins for reporting analysts while preserving strict table schema opacity.
-* 🔐 **Row & Column-Level Security via Views:** Restricting direct access to sensitive payroll, PII, and financial attributes by exposing only filtered slices of tables.
-* 📑 **Updatable Views:** Managing direct write-back transactions into underlying base tables adhering to view modification rules (single-table mutations without aggregate interference).
-
----
-
-# 🛡️ Transaction Control & Database Integrity (ACID Mechanics)
-
-High-concurrency e-commerce aur financial ledger consistency boundaries:
-
-* ⚛️ **ACID Architecture:** Enforcing Atomicity (all-or-nothing), Consistency (rules/constraints check), Isolation (concurrent safety), and Durability (WAL logging).
-* 🚦 **Boundary Execution (`BEGIN TRAN`, `COMMIT`, `ROLLBACK`):** Explicit transaction demarcation preventing partial batch commits during runtime network or software crashes.
-* 📍 **Savepoint Recovery (`SAVEPOINT`):** Setting granular rollback checkpoints inside complex long-running business workflows to undo isolated exceptions without voiding entire transactions.
-
----
-
-# 🪟 Advanced Analytical Window Functions & CTEs
-
-High-volume reporting, moving trends, aur hierarchical dataset processing ke liye advanced analytical engines:
-
-* 🪟 **Window Architecture (`OVER` Clause):** Row-level detail maintain karte hue aggregate aur analytic calculations perform karna (raw records ko `GROUP BY` ki tarah collapse kiye bina):
-* `PARTITION BY`: Data ko logical segments ya categories mein divide karna.
-* `ORDER BY`: Window frame ke andar calculation sequence enforce karna.
-* `ROWS / RANGE BETWEEN`: Moving averages aur cumulative running totals ke liye dynamic sliding boundaries define karna.
-
-
-* 🥇 **Ranking & Distribution Functions:**
-* `ROW_NUMBER()`: Partition ke andar har record ko unique, continuous sequential integer allocate karna.
-* `RANK()`: Tied values par same rank assign karna, aur next rank par gap/skip generate karna (e.g., 1, 2, 2, 4).
-* `DENSE_RANK()`: Tied values par same rank assign karna bina koi next rank skip kiye (e.g., 1, 2, 2, 3) — top Nth salary/performance analysis ke liye essential.
-* `NTILE(n)`: Distribution profiling aur quartile/decile cohort segmentation ke liye records ko equal buckets mein divide karna.
-
-
-* 🧭 **Value & Navigation Functions:**
-* `LEAD()` & `LAG()`: Self-join use kiye bina current row se agle ya pichle row ki value access karna (MoM revenue growth aur churn time-deltas calculate karne ke liye).
-* `FIRST_VALUE()` & `LAST_VALUE()`: Partition window ke boundary reference points retrieve karna.
-
-
-* 🧱 **Common Table Expressions (CTEs - `WITH` Clause):**
-* **Standard CTEs:** Unreadable nested subqueries ko modular, reusable, named temporary result sets mein simplify karna.
-* **Recursive CTEs:** Multi-level organizational charts (Employee-Manager hierarchy), folder structures, aur graph dependency trees traverse karne ke liye iterative self-referencing queries.
-
-
-* 🔀 **Set Theory Operators:**
-* `UNION` vs `UNION ALL`: Duplicate removal overhead ke sath combine karna vs bina deduplication overhead ke fast set appending.
-* `INTERSECT`: Multiple queries mein strictly common projection rows extract karna.
-* `EXCEPT` / `MINUS`: Pehle query dataset se second query dataset ke common records filter/prune karna.
-
-
+Topics in this README that are **not yet in the script** (views, security, temp tables, temporal tables, `UNPIVOT`, XML, full-text search, pagination, `ROLLUP`, dynamic SQL) include their own runnable examples in [section 9](#9-extra-topics-with-examples).
 
 ---
 
-# ⚙️ Database Programmability & Procedural Objects
+## Sample database
 
-Business workflows encapsulate karne aur database server par directly procedural logic compile/execute karne ke mechanics:
+All examples use **TechCorpDB**, created by the script:
 
-* 📜 **Stored Procedures (`CREATE PROCEDURE`):**
-* Pre-compiled execution plans, input/output parameter binding, execution plan caching, aur dynamic SQL injection protection.
-* Procedural control structures: `IF...ELSE`, loops, try-catch exception handling blocks, aur custom transactional rollbacks.
-
-
-* 🛠️ **User-Defined Functions (UDFs):**
-* **Scalar Functions:** Calculated transformations return karne wale deterministic reusable algorithms.
-* **Table-Valued Functions (TVFs):** Parameterized virtual tables provide karne wale inline/multi-statement subroutines.
-
-
-* 🚨 **Triggers (Automated Event Listeners):**
-* `AFTER / FOR Triggers`: Table DML mutations complete hone ke baad audit logging aur notification pipelines trigger karna.
-* `INSTEAD OF Triggers`: Complex non-updatable multi-table views ke upar custom update/insert routing logic override karna.
-
-
-* 🗃️ **Temporary Storage Structures:**
-* **Local Temp Tables (`#Table`):** Session-scoped volatile storage jo complex intermediate operations streamline karta hai.
-* **Global Temp Tables (`##Table`):** Cross-session shared cache partitions.
-* **Table Variables (`@Table`):** Memory-optimized lightweight procedural containers for small data lookups.
-
-
+| Table | Columns (key ones) | Notes |
+|---|---|---|
+| `Departments` | `DeptID` (PK), `DeptName` (unique), `Location` | 4 departments |
+| `Employees` | `EmpID` (PK, starts at 101), `FirstName`, `LastName`, `Email`, `Salary`, `Age`, `DeptID` (FK), `ManagerID` (self-FK), `HireDate`, `IsActive` | 6 employees, includes one top-level manager and one employee with no department |
+| `Orders` | `OrderID` (PK, starts at 1001), `EmpID` (FK), `OrderDate`, `TotalAmount`, `Status` | `ON DELETE CASCADE` from `Employees` |
+| `AuditLog` | `LogID`, `ActionDescription`, `LoggedAt` | filled by a trigger |
 
 ---
 
-# 🚀 Query Optimization, Indexing & Performance Tuning
+## 1. Fundamentals
 
-Mission-critical enterprise workloads mein query latency millisecond level par lane aur compute bottlenecks reduce karne ke rules:
+- **RDBMS basics:** data lives in tables (rows and columns) linked by keys. Benefits: structure, integrity, concurrent access, and powerful querying.
+- **System databases (SQL Server):** `master` (server configuration and logins), `model` (template for new databases), `msdb` (SQL Agent jobs, backups history), `tempdb` (temporary objects; recreated on every restart).
+- **SQL command categories:**
 
-* 📇 **B-Tree Indexing Architecture:**
-* **Clustered Index:** Table ke physical rows ko disk par leaf-level sorting order mein arrange karna (Primary Key standard, ek table par exactly 1 allowed).
-* **Non-Clustered Index:** Pointers (row locators) ke sath secondary lookup structures maintain karna jo base data table se logically decoupled hote hain.
-* **Composite Indexes & Column Ordering:** Left-to-right indexing principle (high-cardinality filters leading columns par rakhna).
-* **Covering Indexes (`INCLUDE` Columns):** Non-key payload attributes leaf-node par inject karke expensive **Key Lookup / Bookmark Lookup** operations eliminate karna.
+| Category | Purpose | Examples |
+|---|---|---|
+| DDL | Define structure | `CREATE`, `ALTER`, `DROP`, `TRUNCATE` |
+| DML | Change data | `INSERT`, `UPDATE`, `DELETE`, `MERGE` |
+| DQL | Read data | `SELECT` |
+| DCL | Permissions | `GRANT`, `REVOKE`, `DENY` |
+| TCL | Transactions | `BEGIN TRAN`, `COMMIT`, `ROLLBACK`, `SAVE TRAN` |
 
+- **Common data types:** numeric (`INT`, `BIGINT`, `DECIMAL(p,s)`), text (`CHAR`, `VARCHAR`, `NVARCHAR` for Unicode), date/time (`DATE`, `DATETIME2`), and `BIT`, `VARBINARY`. Choose the smallest type that fits your data.
+- **Constraints:** `NOT NULL`, `UNIQUE`, `PRIMARY KEY`, `FOREIGN KEY`, `CHECK`, `DEFAULT`, and `IDENTITY` for auto-increment.
+- **Operators:** arithmetic, comparison (`=`, `<>`, `!=`), logical (`AND`, `OR`, `NOT`), and special (`LIKE`, `BETWEEN`, `IN`, `EXISTS`).
 
-* 🗺️ **Execution Plan Analysis & Cost Profiling:**
-* **Index Seek vs. Index Scan:** Direct pointer navigation vs pura index read karna (Seek is optimal, Scan signifies sub-optimal index utilization).
-* **Table Scan:** Complete unindexed table disk sweep (production warning sign).
-* **Join Internals:** Nested Loops Join (low-volume indexed), Hash Match Join (large unsorted volumes), aur Merge Join (pre-sorted indexed large sets).
+> 📂 Script: Modules **01** and **02**. 
 
+---
 
-* 🚫 **Sargable Query Writing (Search Argument Able):**
-* `WHERE` clause ke indexed columns par wrapping functions avoid karna taaki index seek degrade na ho:
-```sql
--- ❌ Non-Sargable (Triggers complete Table Scan):
-WHERE YEAR(created_at) = 2026;
+## 2. Querying data
 
--- ✅ Sargable (Enables fast Index Seek):
-WHERE created_at >= '2026-01-01' AND created_at < '2027-01-01';
+**Logical processing order** (not the order you type it):
 
+```text
+FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY -> TOP / OFFSET-FETCH
 ```
 
+This is why you can use a column alias in `ORDER BY` but not in `WHERE`.
 
+- **Filtering:** `WHERE` filters rows before grouping; `HAVING` filters groups after aggregation.
+- **Aggregates:** `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`. Aggregates ignore `NULL` (except `COUNT(*)`).
+- **Joins:**
 
+| Join | Returns |
+|---|---|
+| `INNER` | Only matching rows from both tables |
+| `LEFT` | All rows from the left table, matches from the right (else `NULL`) |
+| `RIGHT` | All rows from the right table, matches from the left |
+| `FULL OUTER` | All rows from both tables |
+| `CROSS` | Every combination (N x M rows) |
+| Self join | A table joined to itself, e.g. employee to manager |
 
-* 🔒 **Transaction Concurrency & Deadlock Prevention:**
-* Isolation level tradeoffs: Dirty Reads, Non-Repeatable Reads, aur Phantom Reads ko balance karna.
-* `READ COMMITTED`, `REPEATABLE READ`, `SERIALIZABLE`, aur non-blocking `SNAPSHOT / READ COMMITTED SNAPSHOT (RCSI)`.
-* Multi-query lock acquisition sequence standardize karke resource graph deadlocks eliminate karna.
+- **Subqueries:** scalar (one value), multi-row (`IN`, `ANY`, `ALL`), and correlated (references the outer query; uses `EXISTS` / `NOT EXISTS`).
+- **Wildcards:** `%` (any characters) and `_` (exactly one character).
+- **Functions:** string (`UPPER`, `SUBSTRING`, `CHARINDEX`, `REPLACE`, `CONCAT`), math (`ROUND`, `FLOOR`, `CEILING`, `ABS`), dates (`GETDATE`, `DATEDIFF`, `DATEADD`, `DATEPART`), and `NULL` handling (`ISNULL`, `COALESCE`, `NULLIF`).
 
+```sql
+SELECT FirstName,
+       CASE WHEN Salary >= 100000 THEN 'Executive'
+            WHEN Salary >= 60000  THEN 'Mid-Level'
+            ELSE 'Associate' END AS CompensationBand
+FROM Employees;
+```
 
-
----
-
-# 🛡️ Data Modeling, Normalization & Warehouse Architecture
-
-Scalable transactional backends (OLTP) se high-throughput analytical warehouses (OLAP) design karne ke core concepts:
-
-* 📐 **Database Normalization:**
-* **1NF:** Atomic attributes, unique row identification, repeating multi-value groups eliminate karna.
-* **2NF:** 1NF compliance + composite primary key ke upar zero partial functional dependencies.
-* **3NF:** 2NF compliance + non-key attributes ke beech transitive dependencies (`A -> B -> C`) eliminate karna.
-* **BCNF (Boyce-Codd Normal Form):** Anomalies wipe out karne ke liye strict candidate key dependency enforcement.
-
-
-* 🏬 **OLTP vs. OLAP Paradigm:**
-* **OLTP (Online Transaction Processing):** Highly normalized (3NF), frequent point write-heavy operational databases.
-* **OLAP (Online Analytical Processing):** Denormalized, column-oriented read-heavy reporting systems.
-
-
-* ⭐ **Dimensional Modeling (Star vs. Snowflake Schema):**
-* **Fact Tables:** Central quantitative business event metrics (sales amounts, units sold, call durations).
-* **Dimension Tables:** Surrounding descriptive context hierarchies (customer profiles, store locations, calendar periods).
-
-# 🛡️ Data Security, Auditing & Access Control (DCL Deep-Dive)
-
-Core principles of database security, user governance, and enterprise data masking:
-
-* 🔐 **Authentication vs. Authorization:** Physical architectural separation between Server-level Logins (Windows Authentication, SQL Authentication) and Database-level Users.
-* 🛡️ **Role-Based Access Control (RBAC):** Implementing built-in fixed database roles (`db_owner`, `db_datareader`, `db_datawriter`) alongside custom application-defined security roles.
-* 🚦 **Privilege Hierarchy (`GRANT`, `REVOKE`, `DENY`):**
-* `GRANT`: Allocates explicit read/write/execute permissions at the database, schema, or object level.
-* `REVOKE`: Removes previously granted permissions.
-* `DENY`: Imposes an explicit override block that supersedes any inherited group or role permissions.
-
-
-* 🎭 **Dynamic Data Masking (DDM):** Obfuscating sensitive fields (Credit Card numbers, PII, Email IDs) at the query presentation layer for non-privileged users (`xxxx-xxxx-xxxx-1234`).
+> 📂 Script: Modules **03** to **07**.
 
 ---
 
-# 🧱 Sharding, Partitioning & Scalability Mechanics
+## 3. Advanced querying
 
-Architectural patterns for horizontally splitting, optimizing, and scaling high-volume datasets (Terabytes/Petabytes):
+### Window functions
 
-* 🗂️ **Horizontal Table Partitioning:** Distributing massive underlying data pages across distinct filegroups (e.g., date ranges or tenant IDs) to maximize performance via *Partition Elimination / Pruning*.
-* ✂️ **Vertical Partitioning:** Decoupling rarely queried, heavy payload attributes (BLOBs, large text chunks) into auxiliary tables to streamline memory and buffer pool I/O footprints.
-* 🌐 **Database Sharding:** Horizontally distributing discrete data partitions across independent physical database instances using hash or range keys.
-* 🔄 **Replication & High Availability (HA):** Deploying primary read-write instances paired with dedicated read-only replicas to isolate analytical and reporting workloads from transactional OLTP traffic.
+Calculate across related rows **without collapsing them** like `GROUP BY` does.
 
----
+| Function | Behavior |
+|---|---|
+| `ROW_NUMBER()` | Unique sequential number per partition |
+| `RANK()` | Ties share a rank, then a gap (1, 2, 2, 4) |
+| `DENSE_RANK()` | Ties share a rank, no gap (1, 2, 2, 3). Useful for "Nth highest salary" |
+| `NTILE(n)` | Splits rows into `n` equal buckets (quartiles, deciles) |
+| `LAG()` / `LEAD()` | Value from the previous / next row |
+| `FIRST_VALUE()` / `LAST_VALUE()` | First / last value in the window frame |
+| `SUM() OVER (... ROWS BETWEEN ...)` | Running totals and moving averages |
 
-# ⏳ Temporal Tables & Slowly Changing Dimensions (SCD)
+```sql
+SELECT FirstName, DeptID, Salary,
+       DENSE_RANK() OVER (PARTITION BY DeptID ORDER BY Salary DESC) AS DeptRank,
+       AVG(Salary) OVER (ORDER BY HireDate
+                         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS MovingAvg3
+FROM Employees;
+```
 
-Core data warehousing design patterns for capturing audit histories and point-in-time state changes:
+### Common Table Expressions (CTEs)
 
-* ⏱️ **System-Versioned Temporal Tables:** Engine-managed historical versioning that automatically stamps valid-from and valid-to intervals (`FOR SYSTEM_TIME AS OF`).
-* 📊 **SCD Classification (Data Warehousing Standard):**
-* **SCD Type 0:** Retains static, immutable baseline values (e.g., original birth dates).
-* **SCD Type 1:** Directly overwrites existing attributes with current values (no historical lineage preserved).
-* **SCD Type 2:** Appends a new immutable record with explicit active flags and validity date ranges on every attribute mutation (complete historical tracking).
-* **SCD Type 3:** Preserves prior states by provisioning dedicated historical tracking columns (e.g., `previous_value`).
+- **Standard CTE:** turns nested subqueries into readable, named steps.
+- **Recursive CTE:** walks hierarchies such as manager to employee, folders, or bills of materials. It needs an anchor member, `UNION ALL`, and a recursive member.
 
+### Set operators
 
+| Operator | Result |
+|---|---|
+| `UNION` | Combined rows, duplicates removed |
+| `UNION ALL` | Combined rows, duplicates kept (faster) |
+| `INTERSECT` | Rows present in both queries |
+| `EXCEPT` (`MINUS` in Oracle) | Rows in the first query but not the second |
 
----
+All queries in a set operation need the same number of columns with compatible types.
 
-# 🗃️ Semi-Structured Data Handling (JSON & XML in SQL)
-
-Integrating modern REST APIs and document payloads within relational database engines:
-
-* 📄 **JSON Serialization & Extraction:** Serializing tabular rows into JSON payloads (`FOR JSON PATH`) and extracting scalar variables using runtime parsers (`JSON_VALUE`, `JSON_QUERY`).
-* 🔍 **JSON Array Unnesting (`OPENJSON`):** Exploding nested JSON arrays and objects into standard relational tables with defined schemas.
-* 📑 **XML Parsing:** Querying and transforming hierarchical XML schemas into tabular structures via `.nodes()` and `.value()` XQuery methods.
-
----
-
-# 🔄 Upsert & ETL Synchronization (`MERGE` Statement)
-
-Atomic data synchronization for ETL pipelines and data warehouses:
-
-* 🔀 **Atomic Dual-Action Operations (`MERGE INTO`):** Evaluates a Target table against a Source dataset on defined primary/business keys in a single atomic transaction.
-* ⚡ **Branch Execution Criteria:**
-* `WHEN MATCHED THEN UPDATE`: Synchronizes modified non-key attributes on existing records.
-* `WHEN NOT MATCHED [BY TARGET] THEN INSERT`: Appends new records into the target table.
-* `WHEN NOT MATCHED BY SOURCE THEN DELETE`: Purges records absent from the incoming source pipeline.
-
-
-* 🛡️ **Race Condition Elimination:** Prevents concurrency race conditions and deadlocks typical of disjointed `IF EXISTS ... UPDATE ELSE INSERT` control flows.
+> 📂 Script: Modules **08**, **09**, **10**.
 
 ---
 
-# 🔲 Data Reshaping & Crosstab Metrics (`PIVOT` & `UNPIVOT`)
+## 4. Programmability
 
-Matrix-style transformations for cross-tabulation reporting and schema normalization:
+- **Stored procedures:** reusable, parameterized logic with input/output parameters, `IF/ELSE`, loops and `TRY/CATCH`. Execution plans are cached, and **using parameters (not string concatenation) protects against SQL injection**. Avoid the `sp_` name prefix, which is reserved for system procedures; use `usp_`.
+- **User-defined functions:** *scalar* functions return one value; *table-valued* functions return a table. Scalar UDFs can be slow on large tables.
+- **Triggers:** run automatically on DML. `AFTER` triggers suit audit logging; `INSTEAD OF` triggers override inserts/updates, often on views. Inside a trigger, the `inserted` and `deleted` tables hold the new and old rows.
+- **Cursors:** process rows one at a time: `DECLARE` -> `OPEN` -> `FETCH NEXT` (loop) -> `CLOSE` -> `DEALLOCATE`. Prefer **set-based** queries: the optimizer handles whole sets efficiently, while cursors are slow and hold resources. Use cursors only for administrative tasks or row-by-row procedure calls.
 
-* 📊 **Cross-Tabulation (`PIVOT`):** Transforms normalized row entries into distinct column attributes alongside statistical aggregations (e.g., transposing monthly sales rows into horizontal reporting columns).
-* 🔄 **Matrix Normalization (`UNPIVOT`):** Collapses wide dimensional columns back into standardized row tuples to adhere to relational database normalization rules.
-* 🔀 **Dynamic PIVOT:** Generating and executing parameterized dynamic SQL queries to handle variable, expanding category columns at runtime.
+```sql
+EXEC usp_GetDepartmentPayroll @DepartmentID = 1, @TotalPayroll = @Payroll OUTPUT;
+```
 
----
-
-# 🎯 Execution Mechanics: Set-Based Engine vs. Cursors
-
-Comparative analysis between procedural iteration and relational set-based operations:
-
-* 🐌 **Procedural Cursors Lifecycle:**
-* Execution lifecycle: `DECLARE` -> `OPEN` -> `FETCH NEXT` (iterative loop) -> `CLOSE` -> `DEALLOCATE`.
-* Introduces high memory pressure, locks data pages sequentially, and scales poorly on high-volume datasets.
-
-
-* ⚡ **Set-Based Processing Paradigm:**
-* Allows the cost-based query optimizer to process datasets simultaneously using vectorized matrix evaluation.
-* Maximizes index seeks, parallel thread utilization (`MAXDOP`), and cache reuse.
-
-
-* ⚖️ **Valid Cursor Use Cases:** Strictly reserved for batch administrative tasks, database maintenance, or executing isolated stored procedures row-by-row.
+> 📂 Script: Modules **11** and **16**.
 
 ---
 
-# 🔎 Full-Text Search (FTS) & Advanced Linguistic Indexing
+## 5. Performance and indexing
 
-High-performance text indexing engines for semi-structured text catalogs and large document fields:
+- **Clustered index:** defines the physical row order. One per table (the primary key by default).
+- **Non-clustered index:** a separate structure with pointers to rows. Many allowed.
+- **Composite index:** column order matters. Put the column you filter by equality first. An index on `(DeptID, Salary)` also serves queries on `DeptID` alone, so a separate `DeptID` index is redundant.
+- **Covering index:** `INCLUDE` extra columns so the query never needs a **Key Lookup**.
+- **Seek vs scan:** an *Index Seek* jumps straight to rows (good). A *Scan* reads everything (fine for small tables, a warning sign on large ones).
+- **Join algorithms:** Nested Loops (small/indexed inputs), Hash Match (large unsorted inputs), Merge Join (large pre-sorted inputs).
+- **Sargable queries:** do not wrap an indexed column in a function.
 
-* 📇 **Inverted Index Catalog Architecture:** Tokenizes text into word-based inverted catalogs while stripping out stop-words/noise words—architecturally distinct from standard B-Tree indexes.
-* 🚫 **Bypassing Leading-Wildcard Bottlenecks:**
-* Bypasses full table scans typically triggered by leading wildcards (`LIKE '%keyword%'`).
-* Enables sub-second retrieval across millions of textual records.
+```sql
+-- ❌ Non-sargable: function on the column forces a scan
+SELECT * FROM Employees WHERE YEAR(HireDate) = 2022;
 
+-- ✅ Sargable: the index can seek
+SELECT * FROM Employees
+WHERE HireDate >= '2022-01-01' AND HireDate < '2023-01-01';
+```
 
-* 🧠 **Linguistic Predicate Operators:**
-* `CONTAINS`: Evaluates exact terms, inflected forms (e.g., *run*, *running*, *ran*), prefix matching, and proximity distances (`NEAR`).
-* `FREETEXT`: Performs natural language context matching by parsing meanings, synonyms, and thesaurus variations.
+**Measure, don't guess:**
 
+```sql
+SET STATISTICS IO ON;    -- logical reads per table
+SET STATISTICS TIME ON;  -- CPU and elapsed time
+-- In SSMS: Ctrl+M = include actual execution plan, Ctrl+L = estimated plan
+```
 
+> 📂 Script: Module **13**.
+
+---
+
+## 6. Transactions and concurrency
+
+- **ACID:** Atomicity (all or nothing), Consistency (constraints hold), Isolation (concurrent safety), Durability (survives crashes via the write-ahead log).
+- **T-SQL commands:** `BEGIN TRANSACTION`, `COMMIT`, `ROLLBACK`, and `SAVE TRANSACTION name` + `ROLLBACK TRANSACTION name` for savepoints (T-SQL does not use the `SAVEPOINT` keyword).
+- **Safe pattern:**
+
+```sql
+SET XACT_ABORT ON;
+BEGIN TRY
+    BEGIN TRANSACTION;
+    -- your changes here
+    COMMIT TRANSACTION;
+END TRY
+BEGIN CATCH
+    IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
+    THROW;   -- re-raise the original error
+END CATCH;
+```
+
+- **Isolation levels:**
+
+| Level | Dirty read | Non-repeatable read | Phantom read |
+|---|---|---|---|
+| `READ UNCOMMITTED` | Possible | Possible | Possible |
+| `READ COMMITTED` (default) | No | Possible | Possible |
+| `REPEATABLE READ` | No | No | Possible |
+| `SERIALIZABLE` | No | No | No |
+| `SNAPSHOT` / RCSI | No | No | No (row-versioning, readers don't block writers) |
+
+- **Deadlock prevention:** access tables in the same order in every transaction, keep transactions short, and index the columns you filter on.
+
+> 📂 Script: Module **12**.
+
+---
+
+## 7. Data modeling and architecture
+
+- **Normalization:**
+  - **1NF:** atomic values, no repeating groups.
+  - **2NF:** 1NF + no partial dependency on part of a composite key.
+  - **3NF:** 2NF + no transitive dependency (`A -> B -> C`).
+  - **BCNF:** every determinant is a candidate key.
+- **OLTP vs OLAP:** OLTP is normalized and write-heavy (orders, payments). OLAP is denormalized and read-heavy (reports, dashboards).
+- **Dimensional modeling:** *fact tables* hold measurable events (sales amount, units); *dimension tables* hold context (customer, product, date). A **star schema** keeps dimensions flat; a **snowflake schema** normalizes them further.
+- **Partitioning:** *horizontal* splits rows (by date or tenant) so queries can skip partitions; *vertical* moves rarely used heavy columns to another table.
+- **Sharding and replication:** sharding spreads data across servers by key; read replicas move reporting load away from the primary.
+
+---
+
+## 8. Security
+
+- **Login vs user:** a *login* authenticates to the server; a *user* is that identity inside one database.
+- **Roles:** fixed roles such as `db_datareader`, `db_datawriter`, `db_owner`, plus custom roles. Grant to roles, not individuals.
+- **Permissions:** `GRANT` allows, `REVOKE` removes a grant or deny, and `DENY` blocks and **overrides** any grant.
+- **Dynamic Data Masking:** hides sensitive values for non-privileged users in query results.
+- **Row-Level Security:** SQL Server has a native feature (`CREATE SECURITY POLICY`) for filtering rows per user. Views can limit columns and rows too, but are not a complete security boundary on their own.
+
+```sql
+CREATE USER ReportUser WITHOUT LOGIN;           -- demo user, no server login
+GRANT  SELECT ON vw_EmployeeDirectory TO ReportUser;
+DENY   SELECT ON dbo.Employees (Salary) TO ReportUser;   -- column-level block
+REVOKE SELECT ON vw_EmployeeDirectory FROM ReportUser;
+```
+
+---
+
+## 9. Extra topics with examples
+
+All examples run against `TechCorpDB` after the main script.
+
+### Views
+
+A view is a **saved query**, not pre-computed data (unless indexed). Use it to simplify joins and expose only selected columns.
+
+```sql
+GO
+CREATE OR ALTER VIEW vw_EmployeeDirectory AS
+SELECT e.EmpID, e.FirstName, e.LastName, d.DeptName
+FROM Employees e
+LEFT JOIN Departments d ON e.DeptID = d.DeptID;
+GO
+SELECT * FROM vw_EmployeeDirectory;
+```
+
+A view is updatable when it maps to one base table without aggregates or `DISTINCT`.
+
+### Temporary storage
+
+```sql
+-- Local temp table: visible to your session, dropped when it ends
+SELECT EmpID, FirstName, Salary
+INTO #HighEarners
+FROM Employees
+WHERE Salary > 90000;
+
+-- Global temp table (##Name): visible to all sessions until the last one disconnects
+
+-- Table variable: scoped to the batch; stored in tempdb, best for small row counts
+DECLARE @Recent TABLE (EmpID INT, HireDate DATE);
+INSERT INTO @Recent
+SELECT EmpID, HireDate FROM Employees WHERE HireDate >= '2023-01-01';
+```
+
+### Pagination
+
+```sql
+SELECT EmpID, FirstName, LastName
+FROM Employees
+ORDER BY EmpID
+OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;   -- page 1, 3 rows per page
+```
+
+### Subtotals with `ROLLUP`
+
+```sql
+SELECT DeptID, COUNT(*) AS Headcount, SUM(Salary) AS Payroll
+FROM Employees
+GROUP BY ROLLUP (DeptID);               -- extra row = grand total
+-- Also see CUBE and GROUPING SETS
+```
+
+### Combining text: `STRING_AGG` (SQL Server 2017+)
+
+```sql
+SELECT DeptID, STRING_AGG(FirstName, ', ') AS Members
+FROM Employees
+WHERE DeptID IS NOT NULL
+GROUP BY DeptID;
+```
+
+### Upsert with `MERGE`
+
+`MERGE` compares a target to a source in one statement: `WHEN MATCHED THEN UPDATE`, `WHEN NOT MATCHED BY TARGET THEN INSERT`, `WHEN NOT MATCHED BY SOURCE THEN DELETE`. Add `WITH (HOLDLOCK)` on the target to avoid race conditions. Note that an `IDENTITY` key is generated by the database, so you cannot choose it from the source. (Module **14**.)
+
+### `PIVOT` and `UNPIVOT`
+
+`PIVOT` turns row values into columns (Module **15**). `UNPIVOT` does the reverse:
+
+```sql
+SELECT EmpID, Metric, Value
+FROM (SELECT EmpID,
+             CAST(Salary AS DECIMAL(12,2)) AS Salary,
+             CAST(Age    AS DECIMAL(12,2)) AS Age
+      FROM Employees) AS src
+UNPIVOT (Value FOR Metric IN (Salary, Age)) AS u;
+```
+
+For a variable list of pivot columns, build the query with **dynamic SQL**.
+
+### Dynamic SQL, safely
+
+```sql
+DECLARE @sql NVARCHAR(MAX) = N'SELECT * FROM Employees WHERE DeptID = @Dept';
+EXEC sp_executesql @sql, N'@Dept INT', @Dept = 1;   -- parameterized: injection-safe
+```
+
+Never build queries by concatenating user input into the string.
+
+### Error handling with `THROW`
+
+```sql
+BEGIN TRY
+    IF NOT EXISTS (SELECT 1 FROM Employees WHERE EmpID = 999)
+        THROW 50001, 'Employee 999 was not found.', 1;
+END TRY
+BEGIN CATCH
+    PRINT ERROR_NUMBER();
+    PRINT ERROR_MESSAGE();
+END CATCH;
+```
+
+### JSON and XML
+
+```sql
+-- Rows -> JSON
+SELECT EmpID, FirstName FROM Employees FOR JSON PATH, ROOT('Employees');
+
+-- JSON -> rows
+SELECT * FROM OPENJSON(N'[{"id":1,"name":"Asha"}]')
+WITH (id INT '$.id', name VARCHAR(50) '$.name');
+
+-- Single values
+SELECT JSON_VALUE(N'{"city":"Pune"}', '$.city');
+
+-- XML -> rows
+DECLARE @x XML = N'<emps><emp id="1"><name>Asha</name></emp></emps>';
+SELECT n.value('@id', 'INT') AS EmpID,
+       n.value('(name)[1]', 'VARCHAR(50)') AS Name
+FROM @x.nodes('/emps/emp') AS t(n);
+```
+
+### System-versioned temporal tables
+
+SQL Server keeps full row history automatically.
+
+```sql
+CREATE TABLE dbo.Products (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(50) NOT NULL,
+    Price DECIMAL(10,2) NOT NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN,
+    ValidTo   DATETIME2 GENERATED ALWAYS AS ROW END   HIDDEN,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+) WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = dbo.ProductsHistory));
+
+-- What did the table look like at a point in time?
+SELECT * FROM dbo.Products FOR SYSTEM_TIME AS OF '2026-01-01T00:00:00';
+```
+
+**Slowly Changing Dimensions (data warehousing):**
+
+| Type | Behavior |
+|---|---|
+| 0 | Value never changes (e.g. original birth date) |
+| 1 | Overwrite the old value, no history |
+| 2 | Add a new row with validity dates and an active flag (full history) |
+| 3 | Keep the previous value in an extra column (one level of history) |
+
+### Full-text search
+
+A standard B-tree index cannot speed up `LIKE '%word%'`. A full-text index tokenizes words, ignores stop-words, and supports linguistic matching.
+
+```sql
+-- One-time setup (needs the Full-Text Search feature installed)
+CREATE FULLTEXT CATALOG ftCatalog AS DEFAULT;
+-- CREATE FULLTEXT INDEX ON Employees(FirstName) KEY INDEX <your_primary_key_index_name>;
+
+SELECT * FROM Employees WHERE CONTAINS(FirstName, 'Aman');       -- exact/inflected terms
+SELECT * FROM Employees WHERE FREETEXT(FirstName, 'Aman');       -- natural-language match
+```
+
+> 📂 Script: Modules **14**, **15**, **17**.
+
+---
+
+## 10. Common pitfalls
+
+| Mistake | Why it hurts | Fix |
+|---|---|---|
+| `WHERE col = NULL` | Comparing to `NULL` is never true | `WHERE col IS NULL` |
+| `NOT IN (subquery)` where the subquery can return `NULL` | Returns no rows | Use `NOT EXISTS` |
+| `SELECT *` in production code | Extra I/O, breaks on schema change, blocks covering indexes | List needed columns |
+| Function on an indexed column in `WHERE` | Index scan instead of seek | Rewrite as a range (sargable) |
+| Missing `ORDER BY` with `TOP` or `OFFSET` | Row order is undefined | Always add `ORDER BY` |
+| `DATEDIFF(YEAR, a, b)` for age or tenure | Counts year boundaries, not full years | Adjust for the anniversary (see Module 07) |
+| Naming procedures `sp_...` | Reserved prefix; SQL Server checks `master` first | Use `usp_` |
+| Cursor for a job a single `UPDATE` can do | Slow, holds locks | Use a set-based s
