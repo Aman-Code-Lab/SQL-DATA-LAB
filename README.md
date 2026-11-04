@@ -1,489 +1,586 @@
-# 🚀 SQL-DATA-LAB
+# 📘 Complete SQL Notes
 
-A hands-on SQL learning lab, from first `SELECT` to indexing, transactions and data warehousing concepts. Every topic has runnable **T-SQL (SQL Server)** code, and a practice section at the end lets you test yourself.
-
-> **Dialect:** T-SQL (SQL Server 2016 SP1 or newer). Most querying topics also work in PostgreSQL and MySQL; differences are listed in [Dialect cheat sheet](#dialect-cheat-sheet).
-
----
-
-## Table of contents
-
-- [Quick start](#quick-start)
-- [Repository structure](#repository-structure)
-- [Sample database](#sample-database)
-- [1. Fundamentals](#1-fundamentals)
-- [2. Querying data](#2-querying-data)
-- [3. Advanced querying](#3-advanced-querying)
-- [4. Programmability](#4-programmability)
-- [5. Performance and indexing](#5-performance-and-indexing)
-- [6. Transactions and concurrency](#6-transactions-and-concurrency)
-- [7. Data modeling and architecture](#7-data-modeling-and-architecture)
-- [8. Security](#8-security)
-- [9. Extra topics with examples](#9-extra-topics-with-examples)
-- [10. Common pitfalls](#10-common-pitfalls)
-- [Dialect cheat sheet](#dialect-cheat-sheet)
-- [11. Practice questions](#11-practice-questions)
-- [Learning roadmap](#learning-roadmap)
-- [Contributing and license](#contributing-and-license)
+A complete, beginner-to-advanced SQL reference: every topic, explained, with commands and examples.
+Examples use **MySQL** syntax by default. Differences for **PostgreSQL** and **SQL Server** are marked where important.
 
 ---
 
-## Quick start
+## 📑 Table of Contents
 
-**Requirements:** SQL Server 2016 SP1+ (Developer or Express edition is free) and SQL Server Management Studio (SSMS) or Azure Data Studio.
-
-1. Clone the repo:
-   ```bash
-   git clone https://github.com/Aman-Code-Lab/SQL-DATA-LAB.git
-   ```
-2. Open `scripts/master_sql_commands.sql` in SSMS.
-3. Run the whole script (**F5**). It creates the `TechCorpDB` database, loads sample data and runs every module.
-4. The script is **re-runnable**: it drops and recreates its tables each time.
-5. To study one topic, run only that module. Each module starts with a banner comment such as `MODULE 05`.
-
----
-
-## Repository structure
-
-```text
-SQL-DATA-LAB/
-├── README.md                      <- you are here
-└── scripts/
-    └── master_sql_commands.sql    <- 17 runnable modules (see table below)
-```
-
-| Script module | Topic | Section in this README |
-|---|---|---|
-| 01 | Database and schema management (DDL) | [1](#1-fundamentals) |
-| 02 | Insert, update, delete (DML) | [1](#1-fundamentals) |
-| 03 | Filtering and wildcards | [2](#2-querying-data) |
-| 04 | Aggregates and grouping | [2](#2-querying-data) |
-| 05 | Joins (all variants) | [2](#2-querying-data) |
-| 06 | Subqueries | [2](#2-querying-data) |
-| 07 | Built-in functions and `CASE` | [2](#2-querying-data) |
-| 08 | Window functions | [3](#3-advanced-querying) |
-| 09 | CTEs (standard and recursive) | [3](#3-advanced-querying) |
-| 10 | Set operators | [3](#3-advanced-querying) |
-| 11 | Procedures, functions, triggers | [4](#4-programmability) |
-| 12 | Transaction control | [6](#6-transactions-and-concurrency) |
-| 13 | Indexing and sargability | [5](#5-performance-and-indexing) |
-| 14 | `MERGE` (upsert) | [9](#9-extra-topics-with-examples) |
-| 15 | `PIVOT` | [9](#9-extra-topics-with-examples) |
-| 16 | Cursors | [4](#4-programmability) |
-| 17 | JSON | [9](#9-extra-topics-with-examples) |
-
-Topics in this README that are **not yet in the script** (views, security, temp tables, temporal tables, `UNPIVOT`, XML, full-text search, pagination, `ROLLUP`, dynamic SQL) include their own runnable examples in [section 9](#9-extra-topics-with-examples).
-
----
-
-## Sample database
-
-All examples use **TechCorpDB**, created by the script:
-
-| Table | Columns (key ones) | Notes |
-|---|---|---|
-| `Departments` | `DeptID` (PK), `DeptName` (unique), `Location` | 4 departments |
-| `Employees` | `EmpID` (PK, starts at 101), `FirstName`, `LastName`, `Email`, `Salary`, `Age`, `DeptID` (FK), `ManagerID` (self-FK), `HireDate`, `IsActive` | 6 employees, includes one top-level manager and one employee with no department |
-| `Orders` | `OrderID` (PK, starts at 1001), `EmpID` (FK), `OrderDate`, `TotalAmount`, `Status` | `ON DELETE CASCADE` from `Employees` |
-| `AuditLog` | `LogID`, `ActionDescription`, `LoggedAt` | filled by a trigger |
+1. [Introduction](#1-introduction)
+2. [Types of SQL Commands](#2-types-of-sql-commands)
+3. [Data Types](#3-data-types)
+4. [Database Commands](#4-database-commands)
+5. [Table Commands (DDL)](#5-table-commands-ddl)
+6. [Constraints](#6-constraints)
+7. [DML: INSERT, UPDATE, DELETE](#7-dml-insert-update-delete)
+8. [SELECT and Filtering (DQL)](#8-select-and-filtering-dql)
+9. [Operators](#9-operators)
+10. [Sorting, Limiting, Distinct](#10-sorting-limiting-distinct)
+11. [Aliases](#11-aliases)
+12. [Functions](#12-functions)
+13. [GROUP BY and HAVING](#13-group-by-and-having)
+14. [Joins](#14-joins)
+15. [Set Operations](#15-set-operations)
+16. [Subqueries](#16-subqueries)
+17. [CTE (WITH clause)](#17-cte-with-clause)
+18. [Window Functions](#18-window-functions)
+19. [CASE and Conditional Logic](#19-case-and-conditional-logic)
+20. [Views](#20-views)
+21. [Indexes](#21-indexes)
+22. [Keys and Relationships](#22-keys-and-relationships)
+23. [Normalization](#23-normalization)
+24. [Transactions (TCL) and ACID](#24-transactions-tcl-and-acid)
+25. [DCL: Users and Permissions](#25-dcl-users-and-permissions)
+26. [Stored Procedures, Functions, Triggers, Cursors](#26-stored-procedures-functions-triggers-cursors)
+27. [Temporary Tables](#27-temporary-tables)
+28. [Order of Execution](#28-order-of-execution)
+29. [Performance and Optimization](#29-performance-and-optimization)
+30. [Advanced Topics](#30-advanced-topics)
+31. [Interview Questions](#31-interview-questions)
+32. [Quick Cheat Sheet](#32-quick-cheat-sheet)
+33. [Practice Sample Schema](#33-practice-sample-schema)
+34. [Additional Topics (Missing Pieces)](#34-additional-topics-missing-pieces)
+34. [Setup, Tools and CLI Commands](#34-setup-tools-and-cli-commands)
+35. [DBMS Concepts (Theory)](#35-dbms-concepts-theory)
+36. [Schemas, Sequences, Synonyms, Auto-increment](#36-schemas-sequences-synonyms-auto-increment)
+37. [Extra Clauses, Operators and Functions](#37-extra-clauses-operators-and-functions)
+38. [Triggers and Routines: More Detail](#38-triggers-and-routines-more-detail)
+39. [Security, Backup and Recovery](#39-security-backup-and-recovery)
+40. [Internals: Indexes, Execution and Join Algorithms](#40-internals-indexes-execution-and-join-algorithms)
+41. [MySQL vs PostgreSQL vs SQL Server vs Oracle](#41-mysql-vs-postgresql-vs-sql-server-vs-oracle)
+42. [Practice Problems with Solutions](#42-practice-problems-with-solutions)
+43. [Common Errors and Fixes](#43-common-errors-and-fixes)
+44. [Best Practices and Naming Conventions](#44-best-practices-and-naming-conventions)
+45. [A–Z Command Index](#45-az-command-index)
 
 ---
 
-## 1. Fundamentals
+## 1. Introduction
 
-- **RDBMS basics:** data lives in tables (rows and columns) linked by keys. Benefits: structure, integrity, concurrent access, and powerful querying.
-- **System databases (SQL Server):** `master` (server configuration and logins), `model` (template for new databases), `msdb` (SQL Agent jobs, backups history), `tempdb` (temporary objects; recreated on every restart).
-- **SQL command categories:**
+### What is SQL?
+**SQL (Structured Query Language)** is the standard language used to store, retrieve, update, and manage data in **Relational Database Management Systems (RDBMS)**.
 
-| Category | Purpose | Examples |
-|---|---|---|
-| DDL | Define structure | `CREATE`, `ALTER`, `DROP`, `TRUNCATE` |
-| DML | Change data | `INSERT`, `UPDATE`, `DELETE`, `MERGE` |
-| DQL | Read data | `SELECT` |
-| DCL | Permissions | `GRANT`, `REVOKE`, `DENY` |
-| TCL | Transactions | `BEGIN TRAN`, `COMMIT`, `ROLLBACK`, `SAVE TRAN` |
+### What is a Database?
+An organized collection of data stored electronically.
 
-- **Common data types:** numeric (`INT`, `BIGINT`, `DECIMAL(p,s)`), text (`CHAR`, `VARCHAR`, `NVARCHAR` for Unicode), date/time (`DATE`, `DATETIME2`), and `BIT`, `VARBINARY`. Choose the smallest type that fits your data.
-- **Constraints:** `NOT NULL`, `UNIQUE`, `PRIMARY KEY`, `FOREIGN KEY`, `CHECK`, `DEFAULT`, and `IDENTITY` for auto-increment.
-- **Operators:** arithmetic, comparison (`=`, `<>`, `!=`), logical (`AND`, `OR`, `NOT`), and special (`LIKE`, `BETWEEN`, `IN`, `EXISTS`).
+### What is a DBMS / RDBMS?
+- **DBMS**: software to manage databases.
+- **RDBMS**: DBMS that stores data in **tables** (rows and columns) with relationships. Examples: MySQL, PostgreSQL, Oracle, SQL Server, SQLite, MariaDB.
 
-> 📂 Script: Modules **01** and **02**. 
-
----
-
-## 2. Querying data
-
-**Logical processing order** (not the order you type it):
-
-```text
-FROM -> WHERE -> GROUP BY -> HAVING -> SELECT -> DISTINCT -> ORDER BY -> TOP / OFFSET-FETCH
-```
-
-This is why you can use a column alias in `ORDER BY` but not in `WHERE`.
-
-- **Filtering:** `WHERE` filters rows before grouping; `HAVING` filters groups after aggregation.
-- **Aggregates:** `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`. Aggregates ignore `NULL` (except `COUNT(*)`).
-- **Joins:**
-
-| Join | Returns |
+### Key Terms
+| Term | Meaning |
 |---|---|
-| `INNER` | Only matching rows from both tables |
-| `LEFT` | All rows from the left table, matches from the right (else `NULL`) |
-| `RIGHT` | All rows from the right table, matches from the left |
-| `FULL OUTER` | All rows from both tables |
-| `CROSS` | Every combination (N x M rows) |
-| Self join | A table joined to itself, e.g. employee to manager |
+| Table | Collection of related data (like a spreadsheet) |
+| Row / Record / Tuple | One entry in a table |
+| Column / Field / Attribute | One property of the data |
+| Primary Key | Uniquely identifies each row |
+| Foreign Key | Links to the primary key of another table |
+| Schema | Structure/blueprint of the database |
+| Query | A request for data |
+| NULL | Missing/unknown value (not 0, not empty string) |
 
-- **Subqueries:** scalar (one value), multi-row (`IN`, `ANY`, `ALL`), and correlated (references the outer query; uses `EXISTS` / `NOT EXISTS`).
-- **Wildcards:** `%` (any characters) and `_` (exactly one character).
-- **Functions:** string (`UPPER`, `SUBSTRING`, `CHARINDEX`, `REPLACE`, `CONCAT`), math (`ROUND`, `FLOOR`, `CEILING`, `ABS`), dates (`GETDATE`, `DATEDIFF`, `DATEADD`, `DATEPART`), and `NULL` handling (`ISNULL`, `COALESCE`, `NULLIF`).
-
-```sql
-SELECT FirstName,
-       CASE WHEN Salary >= 100000 THEN 'Executive'
-            WHEN Salary >= 60000  THEN 'Mid-Level'
-            ELSE 'Associate' END AS CompensationBand
-FROM Employees;
-```
-
-> 📂 Script: Modules **03** to **07**.
-
----
-
-## 3. Advanced querying
-
-### Window functions
-
-Calculate across related rows **without collapsing them** like `GROUP BY` does.
-
-| Function | Behavior |
+### SQL vs NoSQL
+| SQL | NoSQL |
 |---|---|
-| `ROW_NUMBER()` | Unique sequential number per partition |
-| `RANK()` | Ties share a rank, then a gap (1, 2, 2, 4) |
-| `DENSE_RANK()` | Ties share a rank, no gap (1, 2, 2, 3). Useful for "Nth highest salary" |
-| `NTILE(n)` | Splits rows into `n` equal buckets (quartiles, deciles) |
-| `LAG()` / `LEAD()` | Value from the previous / next row |
-| `FIRST_VALUE()` / `LAST_VALUE()` | First / last value in the window frame |
-| `SUM() OVER (... ROWS BETWEEN ...)` | Running totals and moving averages |
+| Tables, fixed schema | Documents / key-value / graph, flexible schema |
+| Vertical scaling (mostly) | Horizontal scaling |
+| ACID strong | Often BASE (eventual consistency) |
+| MySQL, PostgreSQL | MongoDB, Redis, Cassandra |
 
+### SQL is case-insensitive for keywords
+`SELECT` = `select`. Convention: keywords UPPERCASE, names lowercase. Every statement ends with `;`.
+
+### Comments
 ```sql
-SELECT FirstName, DeptID, Salary,
-       DENSE_RANK() OVER (PARTITION BY DeptID ORDER BY Salary DESC) AS DeptRank,
-       AVG(Salary) OVER (ORDER BY HireDate
-                         ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS MovingAvg3
-FROM Employees;
+-- single line comment
+# single line (MySQL only)
+/* multi
+   line comment */
 ```
-
-### Common Table Expressions (CTEs)
-
-- **Standard CTE:** turns nested subqueries into readable, named steps.
-- **Recursive CTE:** walks hierarchies such as manager to employee, folders, or bills of materials. It needs an anchor member, `UNION ALL`, and a recursive member.
-
-### Set operators
-
-| Operator | Result |
-|---|---|
-| `UNION` | Combined rows, duplicates removed |
-| `UNION ALL` | Combined rows, duplicates kept (faster) |
-| `INTERSECT` | Rows present in both queries |
-| `EXCEPT` (`MINUS` in Oracle) | Rows in the first query but not the second |
-
-All queries in a set operation need the same number of columns with compatible types.
-
-> 📂 Script: Modules **08**, **09**, **10**.
 
 ---
 
-## 4. Programmability
+## 2. Types of SQL Commands
 
-- **Stored procedures:** reusable, parameterized logic with input/output parameters, `IF/ELSE`, loops and `TRY/CATCH`. Execution plans are cached, and **using parameters (not string concatenation) protects against SQL injection**. Avoid the `sp_` name prefix, which is reserved for system procedures; use `usp_`.
-- **User-defined functions:** *scalar* functions return one value; *table-valued* functions return a table. Scalar UDFs can be slow on large tables.
-- **Triggers:** run automatically on DML. `AFTER` triggers suit audit logging; `INSTEAD OF` triggers override inserts/updates, often on views. Inside a trigger, the `inserted` and `deleted` tables hold the new and old rows.
-- **Cursors:** process rows one at a time: `DECLARE` -> `OPEN` -> `FETCH NEXT` (loop) -> `CLOSE` -> `DEALLOCATE`. Prefer **set-based** queries: the optimizer handles whole sets efficiently, while cursors are slow and hold resources. Use cursors only for administrative tasks or row-by-row procedure calls.
-
-```sql
-EXEC usp_GetDepartmentPayroll @DepartmentID = 1, @TotalPayroll = @Payroll OUTPUT;
-```
-
-> 📂 Script: Modules **11** and **16**.
-
----
-
-## 5. Performance and indexing
-
-- **Clustered index:** defines the physical row order. One per table (the primary key by default).
-- **Non-clustered index:** a separate structure with pointers to rows. Many allowed.
-- **Composite index:** column order matters. Put the column you filter by equality first. An index on `(DeptID, Salary)` also serves queries on `DeptID` alone, so a separate `DeptID` index is redundant.
-- **Covering index:** `INCLUDE` extra columns so the query never needs a **Key Lookup**.
-- **Seek vs scan:** an *Index Seek* jumps straight to rows (good). A *Scan* reads everything (fine for small tables, a warning sign on large ones).
-- **Join algorithms:** Nested Loops (small/indexed inputs), Hash Match (large unsorted inputs), Merge Join (large pre-sorted inputs).
-- **Sargable queries:** do not wrap an indexed column in a function.
-
-```sql
--- ❌ Non-sargable: function on the column forces a scan
-SELECT * FROM Employees WHERE YEAR(HireDate) = 2022;
-
--- ✅ Sargable: the index can seek
-SELECT * FROM Employees
-WHERE HireDate >= '2022-01-01' AND HireDate < '2023-01-01';
-```
-
-**Measure, don't guess:**
-
-```sql
-SET STATISTICS IO ON;    -- logical reads per table
-SET STATISTICS TIME ON;  -- CPU and elapsed time
--- In SSMS: Ctrl+M = include actual execution plan, Ctrl+L = estimated plan
-```
-
-> 📂 Script: Module **13**.
-
----
-
-## 6. Transactions and concurrency
-
-- **ACID:** Atomicity (all or nothing), Consistency (constraints hold), Isolation (concurrent safety), Durability (survives crashes via the write-ahead log).
-- **T-SQL commands:** `BEGIN TRANSACTION`, `COMMIT`, `ROLLBACK`, and `SAVE TRANSACTION name` + `ROLLBACK TRANSACTION name` for savepoints (T-SQL does not use the `SAVEPOINT` keyword).
-- **Safe pattern:**
-
-```sql
-SET XACT_ABORT ON;
-BEGIN TRY
-    BEGIN TRANSACTION;
-    -- your changes here
-    COMMIT TRANSACTION;
-END TRY
-BEGIN CATCH
-    IF XACT_STATE() <> 0 ROLLBACK TRANSACTION;
-    THROW;   -- re-raise the original error
-END CATCH;
-```
-
-- **Isolation levels:**
-
-| Level | Dirty read | Non-repeatable read | Phantom read |
+| Type | Full Form | Purpose | Commands |
 |---|---|---|---|
-| `READ UNCOMMITTED` | Possible | Possible | Possible |
-| `READ COMMITTED` (default) | No | Possible | Possible |
-| `REPEATABLE READ` | No | No | Possible |
-| `SERIALIZABLE` | No | No | No |
-| `SNAPSHOT` / RCSI | No | No | No (row-versioning, readers don't block writers) |
-
-- **Deadlock prevention:** access tables in the same order in every transaction, keep transactions short, and index the columns you filter on.
-
-> 📂 Script: Module **12**.
+| **DDL** | Data Definition Language | Define/modify structure | `CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `RENAME` |
+| **DML** | Data Manipulation Language | Modify data | `INSERT`, `UPDATE`, `DELETE` |
+| **DQL** | Data Query Language | Fetch data | `SELECT` |
+| **DCL** | Data Control Language | Permissions | `GRANT`, `REVOKE` |
+| **TCL** | Transaction Control Language | Manage transactions | `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `SET TRANSACTION` |
 
 ---
 
-## 7. Data modeling and architecture
+## 3. Data Types
 
-- **Normalization:**
-  - **1NF:** atomic values, no repeating groups.
-  - **2NF:** 1NF + no partial dependency on part of a composite key.
-  - **3NF:** 2NF + no transitive dependency (`A -> B -> C`).
-  - **BCNF:** every determinant is a candidate key.
-- **OLTP vs OLAP:** OLTP is normalized and write-heavy (orders, payments). OLAP is denormalized and read-heavy (reports, dashboards).
-- **Dimensional modeling:** *fact tables* hold measurable events (sales amount, units); *dimension tables* hold context (customer, product, date). A **star schema** keeps dimensions flat; a **snowflake schema** normalizes them further.
-- **Partitioning:** *horizontal* splits rows (by date or tenant) so queries can skip partitions; *vertical* moves rarely used heavy columns to another table.
-- **Sharding and replication:** sharding spreads data across servers by key; read replicas move reporting load away from the primary.
-
----
-
-## 8. Security
-
-- **Login vs user:** a *login* authenticates to the server; a *user* is that identity inside one database.
-- **Roles:** fixed roles such as `db_datareader`, `db_datawriter`, `db_owner`, plus custom roles. Grant to roles, not individuals.
-- **Permissions:** `GRANT` allows, `REVOKE` removes a grant or deny, and `DENY` blocks and **overrides** any grant.
-- **Dynamic Data Masking:** hides sensitive values for non-privileged users in query results.
-- **Row-Level Security:** SQL Server has a native feature (`CREATE SECURITY POLICY`) for filtering rows per user. Views can limit columns and rows too, but are not a complete security boundary on their own.
-
-```sql
-CREATE USER ReportUser WITHOUT LOGIN;           -- demo user, no server login
-GRANT  SELECT ON vw_EmployeeDirectory TO ReportUser;
-DENY   SELECT ON dbo.Employees (Salary) TO ReportUser;   -- column-level block
-REVOKE SELECT ON vw_EmployeeDirectory FROM ReportUser;
-```
-
----
-
-## 9. Extra topics with examples
-
-All examples run against `TechCorpDB` after the main script.
-
-### Views
-
-A view is a **saved query**, not pre-computed data (unless indexed). Use it to simplify joins and expose only selected columns.
-
-```sql
-GO
-CREATE OR ALTER VIEW vw_EmployeeDirectory AS
-SELECT e.EmpID, e.FirstName, e.LastName, d.DeptName
-FROM Employees e
-LEFT JOIN Departments d ON e.DeptID = d.DeptID;
-GO
-SELECT * FROM vw_EmployeeDirectory;
-```
-
-A view is updatable when it maps to one base table without aggregates or `DISTINCT`.
-
-### Temporary storage
-
-```sql
--- Local temp table: visible to your session, dropped when it ends
-SELECT EmpID, FirstName, Salary
-INTO #HighEarners
-FROM Employees
-WHERE Salary > 90000;
-
--- Global temp table (##Name): visible to all sessions until the last one disconnects
-
--- Table variable: scoped to the batch; stored in tempdb, best for small row counts
-DECLARE @Recent TABLE (EmpID INT, HireDate DATE);
-INSERT INTO @Recent
-SELECT EmpID, HireDate FROM Employees WHERE HireDate >= '2023-01-01';
-```
-
-### Pagination
-
-```sql
-SELECT EmpID, FirstName, LastName
-FROM Employees
-ORDER BY EmpID
-OFFSET 0 ROWS FETCH NEXT 3 ROWS ONLY;   -- page 1, 3 rows per page
-```
-
-### Subtotals with `ROLLUP`
-
-```sql
-SELECT DeptID, COUNT(*) AS Headcount, SUM(Salary) AS Payroll
-FROM Employees
-GROUP BY ROLLUP (DeptID);               -- extra row = grand total
--- Also see CUBE and GROUPING SETS
-```
-
-### Combining text: `STRING_AGG` (SQL Server 2017+)
-
-```sql
-SELECT DeptID, STRING_AGG(FirstName, ', ') AS Members
-FROM Employees
-WHERE DeptID IS NOT NULL
-GROUP BY DeptID;
-```
-
-### Upsert with `MERGE`
-
-`MERGE` compares a target to a source in one statement: `WHEN MATCHED THEN UPDATE`, `WHEN NOT MATCHED BY TARGET THEN INSERT`, `WHEN NOT MATCHED BY SOURCE THEN DELETE`. Add `WITH (HOLDLOCK)` on the target to avoid race conditions. Note that an `IDENTITY` key is generated by the database, so you cannot choose it from the source. (Module **14**.)
-
-### `PIVOT` and `UNPIVOT`
-
-`PIVOT` turns row values into columns (Module **15**). `UNPIVOT` does the reverse:
-
-```sql
-SELECT EmpID, Metric, Value
-FROM (SELECT EmpID,
-             CAST(Salary AS DECIMAL(12,2)) AS Salary,
-             CAST(Age    AS DECIMAL(12,2)) AS Age
-      FROM Employees) AS src
-UNPIVOT (Value FOR Metric IN (Salary, Age)) AS u;
-```
-
-For a variable list of pivot columns, build the query with **dynamic SQL**.
-
-### Dynamic SQL, safely
-
-```sql
-DECLARE @sql NVARCHAR(MAX) = N'SELECT * FROM Employees WHERE DeptID = @Dept';
-EXEC sp_executesql @sql, N'@Dept INT', @Dept = 1;   -- parameterized: injection-safe
-```
-
-Never build queries by concatenating user input into the string.
-
-### Error handling with `THROW`
-
-```sql
-BEGIN TRY
-    IF NOT EXISTS (SELECT 1 FROM Employees WHERE EmpID = 999)
-        THROW 50001, 'Employee 999 was not found.', 1;
-END TRY
-BEGIN CATCH
-    PRINT ERROR_NUMBER();
-    PRINT ERROR_MESSAGE();
-END CATCH;
-```
-
-### JSON and XML
-
-```sql
--- Rows -> JSON
-SELECT EmpID, FirstName FROM Employees FOR JSON PATH, ROOT('Employees');
-
--- JSON -> rows
-SELECT * FROM OPENJSON(N'[{"id":1,"name":"Asha"}]')
-WITH (id INT '$.id', name VARCHAR(50) '$.name');
-
--- Single values
-SELECT JSON_VALUE(N'{"city":"Pune"}', '$.city');
-
--- XML -> rows
-DECLARE @x XML = N'<emps><emp id="1"><name>Asha</name></emp></emps>';
-SELECT n.value('@id', 'INT') AS EmpID,
-       n.value('(name)[1]', 'VARCHAR(50)') AS Name
-FROM @x.nodes('/emps/emp') AS t(n);
-```
-
-### System-versioned temporal tables
-
-SQL Server keeps full row history automatically.
-
-```sql
-CREATE TABLE dbo.Products (
-    ProductID INT PRIMARY KEY,
-    ProductName VARCHAR(50) NOT NULL,
-    Price DECIMAL(10,2) NOT NULL,
-    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN,
-    ValidTo   DATETIME2 GENERATED ALWAYS AS ROW END   HIDDEN,
-    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
-) WITH (SYSTEM_VERSIONING = ON (HISTORY_TABLE = dbo.ProductsHistory));
-
--- What did the table look like at a point in time?
-SELECT * FROM dbo.Products FOR SYSTEM_TIME AS OF '2026-01-01T00:00:00';
-```
-
-**Slowly Changing Dimensions (data warehousing):**
-
-| Type | Behavior |
+### Numeric
+| Type | Description |
 |---|---|
-| 0 | Value never changes (e.g. original birth date) |
-| 1 | Overwrite the old value, no history |
-| 2 | Add a new row with validity dates and an active flag (full history) |
-| 3 | Keep the previous value in an extra column (one level of history) |
+| `TINYINT` | 1 byte (-128 to 127) |
+| `SMALLINT` | 2 bytes |
+| `MEDIUMINT` | 3 bytes (MySQL) |
+| `INT` / `INTEGER` | 4 bytes |
+| `BIGINT` | 8 bytes |
+| `DECIMAL(p,s)` / `NUMERIC(p,s)` | Exact fixed-point. `DECIMAL(10,2)` = 10 digits, 2 after the point |
+| `FLOAT`, `DOUBLE`, `REAL` | Approximate floating-point |
+| `BIT` | Bit value |
+| `BOOLEAN` | TRUE/FALSE (in MySQL alias for TINYINT(1)) |
 
-### Full-text search
+### String
+| Type | Description |
+|---|---|
+| `CHAR(n)` | Fixed length, padded with spaces |
+| `VARCHAR(n)` | Variable length up to n |
+| `TEXT`, `MEDIUMTEXT`, `LONGTEXT` | Large text |
+| `BINARY`, `VARBINARY`, `BLOB` | Binary data |
+| `ENUM('a','b')` | One value from a list (MySQL) |
+| `SET('a','b')` | Zero or more values from a list (MySQL) |
 
-A standard B-tree index cannot speed up `LIKE '%word%'`. A full-text index tokenizes words, ignores stop-words, and supports linguistic matching.
+### Date & Time
+| Type | Format |
+|---|---|
+| `DATE` | `YYYY-MM-DD` |
+| `TIME` | `HH:MM:SS` |
+| `DATETIME` | `YYYY-MM-DD HH:MM:SS` |
+| `TIMESTAMP` | Date+time, usually stored in UTC, auto-update possible |
+| `YEAR` | `YYYY` |
 
-```sql
--- One-time setup (needs the Full-Text Search feature installed)
-CREATE FULLTEXT CATALOG ftCatalog AS DEFAULT;
--- CREATE FULLTEXT INDEX ON Employees(FirstName) KEY INDEX <your_primary_key_index_name>;
+### Others
+`JSON`, `UUID` (PostgreSQL), `XML`, `ARRAY` (PostgreSQL), `GEOMETRY`/spatial types.
 
-SELECT * FROM Employees WHERE CONTAINS(FirstName, 'Aman');       -- exact/inflected terms
-SELECT * FROM Employees WHERE FREETEXT(FirstName, 'Aman');       -- natural-language match
-```
-
-> 📂 Script: Modules **14**, **15**, **17**.
+**Tip:** Use `DECIMAL` for money, never `FLOAT`.
 
 ---
 
-## 10. Common pitfalls
+## 4. Database Commands
 
-| Mistake | Why it hurts | Fix |
+```sql
+-- Create
+CREATE DATABASE company;
+CREATE DATABASE IF NOT EXISTS company;
+
+-- List all databases
+SHOW DATABASES;                -- MySQL
+\l                             -- PostgreSQL (psql)
+
+-- Select/use
+USE company;                   -- MySQL
+\c company                     -- PostgreSQL
+
+-- Show current database
+SELECT DATABASE();             -- MySQL
+SELECT current_database();     -- PostgreSQL
+
+-- Drop (deletes everything!)
+DROP DATABASE company;
+DROP DATABASE IF EXISTS company;
+
+-- Show tables
+SHOW TABLES;                   -- MySQL
+\dt                            -- PostgreSQL
+
+-- Describe table structure
+DESCRIBE employees;            -- or DESC employees;
+SHOW COLUMNS FROM employees;
+SHOW CREATE TABLE employees;
+```
+
+---
+
+## 5. Table Commands (DDL)
+
+### CREATE TABLE
+```sql
+CREATE TABLE employees (
+    emp_id      INT PRIMARY KEY AUTO_INCREMENT,
+    first_name  VARCHAR(50) NOT NULL,
+    last_name   VARCHAR(50),
+    email       VARCHAR(100) UNIQUE,
+    salary      DECIMAL(10,2) DEFAULT 30000.00,
+    hire_date   DATE,
+    dept_id     INT,
+    CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
+);
+
+CREATE TABLE IF NOT EXISTS t (...);
+```
+
+### Create table from another table
+```sql
+CREATE TABLE emp_backup AS SELECT * FROM employees;          -- copy structure + data
+CREATE TABLE emp_copy   AS SELECT * FROM employees WHERE 1=0; -- structure only
+CREATE TABLE emp_like LIKE employees;                         -- MySQL: structure incl. indexes
+```
+
+### ALTER TABLE
+```sql
+-- Add column
+ALTER TABLE employees ADD phone VARCHAR(15);
+ALTER TABLE employees ADD phone VARCHAR(15) AFTER email;  -- MySQL position
+
+-- Add multiple columns
+ALTER TABLE employees ADD (city VARCHAR(30), state VARCHAR(30));
+
+-- Modify column datatype
+ALTER TABLE employees MODIFY phone VARCHAR(20);           -- MySQL
+ALTER TABLE employees ALTER COLUMN phone TYPE VARCHAR(20);-- PostgreSQL
+ALTER TABLE employees ALTER COLUMN phone VARCHAR(20);     -- SQL Server
+
+-- Rename column
+ALTER TABLE employees RENAME COLUMN phone TO mobile;
+ALTER TABLE employees CHANGE phone mobile VARCHAR(20);    -- MySQL (rename + redefine)
+
+-- Drop column
+ALTER TABLE employees DROP COLUMN mobile;
+
+-- Rename table
+ALTER TABLE employees RENAME TO staff;
+RENAME TABLE staff TO employees;                          -- MySQL
+
+-- Defaults
+ALTER TABLE employees ALTER COLUMN salary SET DEFAULT 25000;
+ALTER TABLE employees ALTER COLUMN salary DROP DEFAULT;
+
+-- Constraints
+ALTER TABLE employees ADD CONSTRAINT uq_email UNIQUE (email);
+ALTER TABLE employees ADD PRIMARY KEY (emp_id);
+ALTER TABLE employees ADD CONSTRAINT fk_dept FOREIGN KEY (dept_id) REFERENCES departments(dept_id);
+ALTER TABLE employees ADD CONSTRAINT chk_sal CHECK (salary > 0);
+ALTER TABLE employees DROP PRIMARY KEY;                   -- MySQL
+ALTER TABLE employees DROP FOREIGN KEY fk_dept;           -- MySQL
+ALTER TABLE employees DROP CONSTRAINT uq_email;           -- PostgreSQL / SQL Server
+ALTER TABLE employees DROP INDEX uq_email;                -- MySQL (for UNIQUE)
+```
+
+### DROP vs TRUNCATE vs DELETE
+| | `DROP` | `TRUNCATE` | `DELETE` |
+|---|---|---|---|
+| Type | DDL | DDL | DML |
+| Removes | Table structure + data | All rows | Rows (all or filtered) |
+| `WHERE` allowed | No | No | Yes |
+| Rollback | No (mostly) | No in MySQL (yes in PostgreSQL/SQL Server inside a transaction) | Yes |
+| Resets AUTO_INCREMENT | N/A | Yes | No |
+| Speed | Fast | Fast | Slower (row by row, logged) |
+| Triggers fire | No | No | Yes |
+
+```sql
+DROP TABLE employees;
+DROP TABLE IF EXISTS employees;
+TRUNCATE TABLE employees;
+DELETE FROM employees;
+```
+
+---
+
+## 6. Constraints
+
+Rules applied on columns to keep data valid.
+
+| Constraint | Meaning |
+|---|---|
+| `NOT NULL` | Column cannot be NULL |
+| `UNIQUE` | All values different (allows NULL; multiple NULLs allowed in most DBs) |
+| `PRIMARY KEY` | `NOT NULL` + `UNIQUE`; one per table (can be composite) |
+| `FOREIGN KEY` | Value must exist in the referenced table |
+| `CHECK` | Value must satisfy a condition |
+| `DEFAULT` | Default value if none supplied |
+| `AUTO_INCREMENT` | Auto-generated sequence (MySQL). `SERIAL`/`IDENTITY` in PostgreSQL, `IDENTITY(1,1)` in SQL Server |
+
+```sql
+CREATE TABLE students (
+    id        INT AUTO_INCREMENT PRIMARY KEY,
+    name      VARCHAR(50) NOT NULL,
+    email     VARCHAR(100) UNIQUE,
+    age       INT CHECK (age >= 18),
+    city      VARCHAR(30) DEFAULT 'Delhi',
+    course_id INT,
+    FOREIGN KEY (course_id) REFERENCES courses(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- Composite primary key
+CREATE TABLE enrollments (
+    student_id INT,
+    course_id  INT,
+    PRIMARY KEY (student_id, course_id)
+);
+```
+
+### Referential actions (ON DELETE / ON UPDATE)
+| Action | Behavior |
+|---|---|
+| `CASCADE` | Delete/update child rows automatically |
+| `SET NULL` | Set the foreign key in child to NULL |
+| `SET DEFAULT` | Set to default value |
+| `RESTRICT` / `NO ACTION` | Block the operation if child rows exist |
+
+---
+
+## 7. DML: INSERT, UPDATE, DELETE
+
+### INSERT
+```sql
+-- All columns (order must match)
+INSERT INTO employees VALUES (1, 'Amit', 'Sharma', 'amit@x.com', 50000, '2023-01-15', 10);
+
+-- Specific columns (recommended)
+INSERT INTO employees (first_name, last_name, salary) VALUES ('Riya', 'Verma', 45000);
+
+-- Multiple rows
+INSERT INTO employees (first_name, salary) VALUES ('A', 100), ('B', 200), ('C', 300);
+
+-- From another table
+INSERT INTO emp_backup SELECT * FROM employees WHERE salary > 40000;
+INSERT INTO emp_backup (first_name, salary) SELECT first_name, salary FROM employees;
+
+-- Ignore duplicates (MySQL)
+INSERT IGNORE INTO employees (...) VALUES (...);
+```
+
+### UPDATE
+```sql
+UPDATE employees SET salary = 60000 WHERE emp_id = 1;
+UPDATE employees SET salary = salary * 1.10 WHERE dept_id = 10;
+UPDATE employees SET first_name = 'X', last_name = 'Y' WHERE emp_id = 2;
+
+-- Update with JOIN (MySQL)
+UPDATE employees e
+JOIN departments d ON e.dept_id = d.dept_id
+SET e.salary = e.salary * 1.05
+WHERE d.dept_name = 'IT';
+
+-- PostgreSQL
+UPDATE employees e SET salary = salary * 1.05
+FROM departments d WHERE e.dept_id = d.dept_id AND d.dept_name = 'IT';
+```
+> ⚠️ Without `WHERE`, **all rows** are updated.
+
+### DELETE
+```sql
+DELETE FROM employees WHERE emp_id = 5;
+DELETE FROM employees WHERE salary < 20000;
+DELETE FROM employees;                        -- all rows
+
+-- Delete with JOIN (MySQL)
+DELETE e FROM employees e
+JOIN departments d ON e.dept_id = d.dept_id
+WHERE d.dept_name = 'Closed';
+```
+
+### UPSERT (insert or update)
+```sql
+-- MySQL
+INSERT INTO employees (emp_id, first_name, salary) VALUES (1, 'Amit', 70000)
+ON DUPLICATE KEY UPDATE salary = VALUES(salary);
+
+-- PostgreSQL / SQLite
+INSERT INTO employees (emp_id, first_name, salary) VALUES (1, 'Amit', 70000)
+ON CONFLICT (emp_id) DO UPDATE SET salary = EXCLUDED.salary;
+
+-- MySQL REPLACE (deletes old row, inserts new)
+REPLACE INTO employees (emp_id, first_name) VALUES (1, 'Amit');
+
+-- SQL Server / Oracle / standard
+MERGE INTO target t
+USING source s ON t.id = s.id
+WHEN MATCHED THEN UPDATE SET t.val = s.val
+WHEN NOT MATCHED THEN INSERT (id, val) VALUES (s.id, s.val);
+```
+
+---
+
+## 8. SELECT and Filtering (DQL)
+
+### Basic SELECT
+```sql
+SELECT * FROM employees;
+SELECT first_name, salary FROM employees;
+SELECT first_name, salary * 12 AS annual_salary FROM employees;
+SELECT 2 + 3;                                  -- no table needed
+SELECT DISTINCT dept_id FROM employees;
+```
+
+### WHERE
+```sql
+SELECT * FROM employees WHERE salary > 50000;
+SELECT * FROM employees WHERE dept_id = 10 AND salary >= 40000;
+SELECT * FROM employees WHERE dept_id = 10 OR dept_id = 20;
+SELECT * FROM employees WHERE NOT dept_id = 10;
+```
+
+### Full SELECT syntax
+```sql
+SELECT   columns
+FROM     table
+JOIN     other ON condition
+WHERE    row_condition
+GROUP BY columns
+HAVING   group_condition
+ORDER BY columns
+LIMIT    n OFFSET m;
+```
+
+---
+
+## 9. Operators
+
+### Comparison
+`=`, `<>` or `!=`, `>`, `<`, `>=`, `<=`, `<=>` (NULL-safe equal, MySQL)
+
+### Logical
+`AND`, `OR`, `NOT`  (precedence: `NOT` > `AND` > `OR`, use parentheses)
+
+### Special operators
+```sql
+-- BETWEEN (inclusive)
+SELECT * FROM employees WHERE salary BETWEEN 30000 AND 50000;
+SELECT * FROM employees WHERE hire_date BETWEEN '2023-01-01' AND '2023-12-31';
+SELECT * FROM employees WHERE salary NOT BETWEEN 30000 AND 50000;
+
+-- IN
+SELECT * FROM employees WHERE dept_id IN (10, 20, 30);
+SELECT * FROM employees WHERE dept_id NOT IN (10, 20);
+
+-- LIKE (pattern matching)   % = any characters, _ = exactly one character
+SELECT * FROM employees WHERE first_name LIKE 'A%';     -- starts with A
+SELECT * FROM employees WHERE first_name LIKE '%a';     -- ends with a
+SELECT * FROM employees WHERE first_name LIKE '%am%';   -- contains am
+SELECT * FROM employees WHERE first_name LIKE '_m%';    -- 2nd letter m
+SELECT * FROM employees WHERE first_name LIKE 'A___';   -- A + exactly 3 chars
+SELECT * FROM employees WHERE first_name NOT LIKE 'A%';
+SELECT * FROM t WHERE col LIKE '50\%%';                 -- escape a literal %
+-- PostgreSQL: ILIKE = case-insensitive LIKE
+
+-- REGEXP / RLIKE (MySQL), ~ (PostgreSQL)
+SELECT * FROM employees WHERE first_name REGEXP '^[AEIOU]';
+
+-- NULL handling
+SELECT * FROM employees WHERE email IS NULL;
+SELECT * FROM employees WHERE email IS NOT NULL;
+-- NOTE: "= NULL" never works. Use IS NULL.
+
+-- EXISTS
+SELECT * FROM departments d
+WHERE EXISTS (SELECT 1 FROM employees e WHERE e.dept_id = d.dept_id);
+
+-- ANY / ALL / SOME
+SELECT * FROM employees WHERE salary > ANY (SELECT salary FROM employees WHERE dept_id = 10);
+SELECT * FROM employees WHERE salary > ALL (SELECT salary FROM employees WHERE dept_id = 10);
+```
+
+### Arithmetic
+`+`, `-`, `*`, `/`, `%` (or `MOD()`), integer division `DIV` (MySQL)
+
+### Bitwise
+`&`, `|`, `^`, `~`, `<<`, `>>`
+
+### Concatenation
+```sql
+SELECT CONCAT(first_name, ' ', last_name) FROM employees;  -- MySQL, PostgreSQL
+SELECT first_name || ' ' || last_name FROM employees;      -- PostgreSQL, Oracle, SQLite
+SELECT first_name + ' ' + last_name FROM employees;        -- SQL Server
+```
+
+### NULL behavior
+- Any arithmetic with NULL = NULL (`5 + NULL` = NULL)
+- `NULL = NULL` is not TRUE (it's unknown)
+- Aggregates (`SUM`, `AVG`, ...) ignore NULL; `COUNT(*)` counts all rows, `COUNT(col)` skips NULL
+
+---
+
+## 10. Sorting, Limiting, Distinct
+
+### ORDER BY
+```sql
+SELECT * FROM employees ORDER BY salary;                   -- ASC default
+SELECT * FROM employees ORDER BY salary DESC;
+SELECT * FROM employees ORDER BY dept_id ASC, salary DESC; -- multiple
+SELECT * FROM employees ORDER BY 3;                        -- by column position
+SELECT * FROM employees ORDER BY salary DESC NULLS LAST;   -- PostgreSQL/Oracle
+SELECT * FROM employees ORDER BY RAND();                   -- random (MySQL)
+```
+
+### LIMIT / OFFSET / TOP / FETCH
+```sql
+SELECT * FROM employees LIMIT 5;                   -- MySQL, PostgreSQL, SQLite
+SELECT * FROM employees LIMIT 5 OFFSET 10;         -- skip 10, take 5 (pagination)
+SELECT * FROM employees LIMIT 10, 5;               -- MySQL: offset, count
+SELECT TOP 5 * FROM employees;                     -- SQL Server
+SELECT * FROM employees FETCH FIRST 5 ROWS ONLY;   -- Oracle, standard SQL
+SELECT * FROM employees ORDER BY id OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY; -- SQL Server/Oracle
+```
+
+**Nth highest salary**
+```sql
+SELECT DISTINCT salary FROM employees ORDER BY salary DESC LIMIT 1 OFFSET 1;  -- 2nd highest
+
+SELECT MAX(salary) FROM employees
+WHERE salary < (SELECT MAX(salary) FROM employees);                          -- 2nd highest
+
+SELECT salary FROM (
+  SELECT salary, DENSE_RANK() OVER (ORDER BY salary DESC) rnk FROM employees
+) t WHERE rnk = 3;                                                           -- 3rd highest
+```
+
+### DISTINCT
+```sql
+SELECT DISTINCT city FROM employees;
+SELECT DISTINCT city, dept_id FROM employees;     -- unique combinations
+SELECT COUNT(DISTINCT city) FROM employees;
+```
+
+---
+
+## 11. Aliases
+
+```sql
+SELECT first_name AS name, salary * 12 AS "Annual Salary" FROM employees;
+SELECT e.first_name, d.dept_name FROM employees AS e JOIN departments AS d ON e.dept_id = d.dept_id;
+```
+- Column alias: rename output column. Table alias: shorten table names, needed for self joins.
+- `AS` is optional. Use quotes if the alias has spaces.
+- You cannot use a SELECT alias in `WHERE` (it runs before SELECT), but you can in `ORDER BY` (and in MySQL `GROUP BY`/`HAVING`).
+
+---
+
+## 12. Functions
+
+### 12.1 Aggregate Functions
+Work on a set of rows, return one value.
+
+| Function | Purpose |
+|---|---|
+| `COUNT(*)` | Number of rows |
+| `COUNT(col)` | Non-NULL values |
+| `COUNT(DISTINCT col)` | Unique non-NULL values |
+| `SUM(col)` | Total |
+| `AVG(col)` | Average |
+| `MIN(col)` / `MAX(col)` | Smallest / largest |
+| `GROUP_CONCAT(col)` | Concatenate values (MySQL) |
+| `STRING_AGG(col, ',')` | Concatenate values (PostgreSQL, SQL Server) |
+| `STDDEV()`, `VARIANCE()` | Statistics |
+
+```sql
+SELECT COUNT(*), SUM(salary), AVG(salary), MIN(salary), MAX(salary) FROM employees;
+SELECT GROUP_CONCAT(first_name ORDER BY first_name SEPARATOR ', ') FROM employees;
+```
+
+### 12.2 String Functions
+| Function | Example | Result |
 |---|---|---|
-| `WHERE col = NULL` | Comparing to `NULL` is never true | `WHERE col IS NULL` |
-| `NOT IN (subquery)` where the subquery can return `NULL` | Returns no rows | Use `NOT EXISTS` |
-| `SELECT *` in production code | Extra I/O, breaks on schema change, blocks covering indexes | List needed columns |
-| Function on an indexed column in `WHERE` | Index scan instead of seek | Rewrite as a range (sargable) |
-| Missing `ORDER BY` with `TOP` or `OFFSET` | Row order is undefined | Always add `ORDER BY` |
-| `DATEDIFF(YEAR, a, b)` for age or tenure | Counts year boundaries, not full years | Adjust for the anniversary (see Module 07) |
-| Naming procedures `sp_...` | Reserved prefix; SQL Server checks `master` first | Use `usp_` |
-| Cursor for a job a single `UPDATE` can do | Slow, holds locks | Use a set-based s
+| `UPPER(s)` / `LOWER(s)` | `UPPER('abc')` | ABC |
+| `LENGTH(s)` / `CHAR_LENGTH(s)` | `LENGTH('abc')` | 3 (`LEN()` in SQL Server) |
+| `CONCAT(a,b,..)` | `CONCAT('a','b')` | ab |
+| `CONCAT_WS(sep,a,b)` | `CONCAT_WS('-','a','b')` | a-b |
+| `SUBSTRING(s,pos,len)` / `SUBSTR` | `SUBSTRING('abcdef',2,3)` | bcd |
+| `LEFT(s,n)` / `RIGHT(s,n)` | `LEFT('abcdef',2)` | ab |
+| `TRIM(s)` / `LTRIM` / `RTRIM` | `TRIM('  a  ')` | a |
+| `REPLACE(s,from,to)` | `REPLACE('hello','l','x')` | hexxo |
+| `REVERSE(s)` | `REVERSE('abc')` | cba |
+| `INSTR(s,sub)` / `LOCATE(sub,s)` / `POSITION` | `INSTR('hello','l')` | 3 |
+| `LPAD(s,n,pad)` / `RPAD` | `LPAD('5',3,'0')` | 005 |
+| `REPEAT(s,n)` | `REPEAT('ab',2)` | abab |
+| `ASCII(c)` / `CHAR(n)` | `ASCII
