@@ -4,8 +4,7 @@
 
 **Every SQL command in one place, with code that actually runs.**
 
-
-    [SQL](https://img.shields.io/badge/SQL-Cheat%20Sheet-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-Cheat%20Sheet-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-00758F?style=for-the-badge&logo=mysql&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-notes-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-notes-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)
@@ -75,6 +74,13 @@ INSERT INTO orders (emp_id, amount, order_date) VALUES
   (6, 2500.00, '2024-01-30'), (6, 300.75, '2024-03-05'),
   (7,  150.00, '2024-03-18'), (3, 999.99, '2024-02-02');
 ```
+
+> ⚠️ **Before you run things:**
+> - Use **MySQL 8.0.31+** (older versions lack `INTERSECT` / `EXCEPT`).
+> - Blocks using placeholder names like `t`, `a`, `b`, `fk` are **templates**, not runnable. Blocks marked "Try it" are runnable.
+> - Run sections **in order**; later ones rely on objects created earlier (e.g. the procedure in Section 23).
+> - Commands in `bash` blocks (`mysqldump`, `mysql`) go in your terminal, not the SQL prompt.
+> - In MySQL Workbench, *Safe Updates* may reject `UPDATE`/`DELETE` without a key in `WHERE` (Error 1175). Run `SET SQL_SAFE_UPDATES = 0;` first.
 
 > 💡 **Note:** `Finance` has no employees and `Vikram Das` has no department. That is deliberate, so the JOIN examples show real differences.
 
@@ -248,7 +254,7 @@ INSERT INTO emp_backup SELECT * FROM employees;                      -- from que
 INSERT INTO emp_backup (name, salary) SELECT name, salary FROM employees WHERE salary > 100000;
 
 INSERT IGNORE INTO departments (dept_name) VALUES ('IT');            -- skip duplicate error (MySQL)
-REPLACE INTO departments (dept_id, dept_name, location) VALUES (1,'IT','Hyderabad');   -- delete + insert (MySQL)
+REPLACE INTO emp_backup (emp_id, name, salary) VALUES (1, 'Asha Rao', 99000);          -- delete + insert (MySQL)
 
 -- UPSERT
 INSERT INTO departments (dept_id, dept_name, location) VALUES (1,'IT','Bengaluru') AS new
@@ -308,10 +314,12 @@ SELECT @cnt;
 Other dialects and locking:
 
 ```sql
-SELECT TOP 3 * FROM employees;                           -- SS
-SELECT * FROM employees FETCH FIRST 3 ROWS ONLY;         -- ORA / PG / SS
+-- SELECT TOP 3 * FROM employees;                        -- SS only (errors in MySQL)
+-- SELECT * FROM employees FETCH FIRST 3 ROWS ONLY;      -- ORA / PG / SS only (errors in MySQL)
+START TRANSACTION;
 SELECT * FROM employees WHERE emp_id = 1 FOR UPDATE;     -- lock rows (inside a transaction)
 SELECT * FROM employees WHERE emp_id = 1 FOR SHARE;      -- shared lock (MySQL 8+, PG)
+ROLLBACK;                                                -- release the locks
 ```
 
 Clause order you **write**:
@@ -855,7 +863,7 @@ CREATE USER 'bob'@'%' IDENTIFIED BY 'Str0ng#Pass2';             -- any host
 GRANT SELECT ON sql_cheatsheet.* TO 'alice'@'localhost';
 GRANT SELECT, INSERT, UPDATE ON sql_cheatsheet.employees TO 'alice'@'localhost';
 GRANT ALL PRIVILEGES ON sql_cheatsheet.* TO 'bob'@'%' WITH GRANT OPTION;
-GRANT EXECUTE ON PROCEDURE sql_cheatsheet.raise_salary TO 'alice'@'localhost';
+-- GRANT EXECUTE ON PROCEDURE sql_cheatsheet.raise_salary TO 'alice'@'localhost';   -- run after Section 23
 
 SHOW GRANTS FOR 'alice'@'localhost';
 REVOKE INSERT ON sql_cheatsheet.employees FROM 'alice'@'localhost';
@@ -913,6 +921,7 @@ DROP PROCEDURE IF EXISTS dept_stats;
 DROP FUNCTION IF EXISTS annual_salary;
 ```
 
+> `DELIMITER` is a **client command**, not SQL. It works in the `mysql` CLI and MySQL Workbench. In phpMyAdmin, DBeaver or similar tools, set the delimiter in the client's own box or option and delete the `DELIMITER` lines. Online SQL playgrounds often don't support it at all.
 > `DELIMITER //` lets the client treat `;` inside the body as part of the routine. Parameter modes: `IN` (default), `OUT`, `INOUT`.
 > If creating functions fails with a binary-logging error, run `SET GLOBAL log_bin_trust_function_creators = 1;` (needs privilege).
 
@@ -1213,7 +1222,8 @@ SELECT * FROM employees
 INTO OUTFILE '/var/lib/mysql-files/employees.csv'
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
--- Import from CSV
+-- Import from CSV (the target table must exist; the output file must not already exist)
+CREATE TABLE IF NOT EXISTS emp_copy LIKE employees;
 LOAD DATA INFILE '/var/lib/mysql-files/employees.csv'
 INTO TABLE emp_copy
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n'
