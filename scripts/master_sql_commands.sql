@@ -1,47 +1,47 @@
-𝗦𝗤𝗟 – 𝗣𝗥𝗘𝗦𝗖𝗥𝗜𝗭𝗜𝗢𝗡𝗘 𝗗𝗘𝗜 𝗖𝗢𝗠𝗔𝗡𝗗𝗜 (𝗖𝗛𝗘𝗔𝗧 𝗦𝗛𝗘𝗘𝗧)
+SQL – COMMAND REFERENCE (CHEAT SHEET)
 =====================================================
 
-Tutti i comandi SQL in un solo posto, con codice funzionante.
-La sintassi predefinita è MySQL 8.0+.
-Sigle: (PG) PostgreSQL, (SS) SQL Server, (ORA) Oracle.
-Gli esempi funzionano sul database di prova della sezione 0.
+All the SQL commands in one place, with working code.
+The default syntax is MySQL 8.0+.
+Abbreviations: (PG) PostgreSQL, (SS) SQL Server, (ORA) Oracle.
+The examples work on the sample database in section 0.
 
-INDICE
- 0. Database di prova            18. Funzioni JSON
- 1. Database                     19. Viste
- 2. Tabelle (DDL)                20. Indici
- 3. ALTER TABLE                  21. Transazioni (TCL)
- 4. Vincoli                      22. Utenti e permessi (DCL)
- 5. INSERT / UPDATE / DELETE     23. Procedure e funzioni
- 6. SELECT (DQL)                 24. Trigger, eventi, cursori
- 7. Operatori                    25. Controllo di flusso
- 8. Join                         26. Variabili e prepared statement
- 9. Operazioni su insiemi        27. Tabelle temporanee e sequenze
-10. Sottoquery e CTE             28. Comandi di amministrazione
-11. Funzioni di aggregazione     29. Prestazioni
-12. Funzioni per stringhe        30. Import, export, backup
-13. Funzioni numeriche           31. Partizionamento
-14. Funzioni data e ora          32. Tipi di dato
-15. Condizioni e NULL            33. Differenze tra dialetti
-16. Conversione di tipo          34. Ordine di esecuzione e categorie
-17. Funzioni finestra (window)
+CONTENTS
+ 0. Sample database              18. JSON functions
+ 1. Database                     19. Views
+ 2. Tables (DDL)                 20. Indexes
+ 3. ALTER TABLE                  21. Transactions (TCL)
+ 4. Constraints                  22. Users and permissions (DCL)
+ 5. INSERT / UPDATE / DELETE     23. Procedures and functions
+ 6. SELECT (DQL)                 24. Triggers, events, cursors
+ 7. Operators                    25. Flow control
+ 8. Joins                        26. Variables and prepared statements
+ 9. Set operations               27. Temporary tables and sequences
+10. Subqueries and CTEs          28. Administration commands
+11. Aggregate functions          29. Performance
+12. String functions             30. Import, export, backup
+13. Numeric functions            31. Partitioning
+14. Date and time functions      32. Data types
+15. Conditions and NULL          33. Differences between dialects
+16. Type conversion              34. Execution order and command categories
+17. Window functions
 
-Avvisi prima di iniziare:
-- Usa MySQL 8.0.31 o superiore (INTERSECT ed EXCEPT non esistono prima).
-- Esegui le sezioni in ordine: alcune dipendono da oggetti creati prima.
-- I blocchi con nomi generici (t, a, b, fk) sono modelli, non eseguibili.
-- DELIMITER è un comando del client (mysql CLI e Workbench), non SQL.
-- In Workbench la "Safe Updates" può bloccare UPDATE/DELETE senza chiave:
-  usa SET SQL_SAFE_UPDATES = 0;
+Warnings before you start:
+- Use MySQL 8.0.31 or later (INTERSECT and EXCEPT do not exist before that).
+- Run the sections in order: some depend on objects created earlier.
+- Blocks with generic names (t, a, b, fk) are templates, not runnable code.
+- DELIMITER is a client command (mysql CLI and Workbench), not SQL.
+- In Workbench, "Safe Updates" can block UPDATE/DELETE without a key:
+  use SET SQL_SAFE_UPDATES = 0;
 
 
-𝗣𝗔𝗥𝗧𝗘 𝟭 – 𝗗𝗔𝗧𝗔𝗕𝗔𝗦𝗘 𝗘 𝗧𝗔𝗕𝗘𝗟𝗟𝗘
+PART 1 – DATABASES AND TABLES
 =====================================================
 
-0. DATABASE DI PROVA
---------------------
-Eseguilo una volta sola. Finance non ha dipendenti e Vikram Das non ha
-reparto: è voluto, per mostrare le differenze tra i join.
+0. SAMPLE DATABASE
+------------------
+Run it only once. Finance has no employees and Vikram Das has no
+department: this is intentional, to show the differences between joins.
 
 DROP DATABASE IF EXISTS sql_cheatsheet;
 CREATE DATABASE sql_cheatsheet CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -98,87 +98,87 @@ INSERT INTO orders (emp_id, amount, order_date) VALUES
 
 1. DATABASE
 -----------
-CREATE DATABASE db;                      Crea il database
-CREATE DATABASE IF NOT EXISTS db;        Crea solo se non esiste
+CREATE DATABASE db;                      Create the database
+CREATE DATABASE IF NOT EXISTS db;        Create only if it does not exist
 CREATE DATABASE db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-                                         Crea con codifica caratteri
-SHOW DATABASES;                          Elenca i database (PG: \l)
-USE db;                                  Seleziona il database (PG: \c db)
-SELECT DATABASE();                       Database corrente
-ALTER DATABASE db CHARACTER SET utf8mb4; Modifica il database
-DROP DATABASE db;                        Elimina il database
-DROP DATABASE IF EXISTS db;              Elimina se esiste
-CREATE SCHEMA s; / DROP SCHEMA s;        Schemi (PG/SS/ORA; in MySQL = database)
+                                         Create with a character encoding
+SHOW DATABASES;                          List databases (PG: \l)
+USE db;                                  Select the database (PG: \c db)
+SELECT DATABASE();                       Current database
+ALTER DATABASE db CHARACTER SET utf8mb4; Modify the database
+DROP DATABASE db;                        Delete the database
+DROP DATABASE IF EXISTS db;              Delete if it exists
+CREATE SCHEMA s; / DROP SCHEMA s;        Schemas (PG/SS/ORA; in MySQL = database)
 
 
-2. TABELLE (DDL)
-----------------
-CREATE TABLE t (id INT PRIMARY KEY, name VARCHAR(50));   Crea tabella
-CREATE TABLE IF NOT EXISTS t (...);      Crea se non esiste
-CREATE TABLE t2 AS SELECT * FROM t;      Copia struttura e dati
-CREATE TABLE t2 AS SELECT * FROM t WHERE 1=0;   Copia solo la struttura
-CREATE TABLE t2 LIKE t;                  Copia struttura con indici (MySQL)
-SELECT * INTO t2 FROM t;                 Copia tabella (SS)
-SHOW TABLES;                             Elenca le tabelle (PG: \dt)
-DESCRIBE t;  /  DESC t;                  Mostra le colonne
-SHOW COLUMNS FROM t;                     Mostra le colonne
-SHOW CREATE TABLE t;                     Mostra il DDL completo
-RENAME TABLE vecchio TO nuovo;           Rinomina (MySQL)
-TRUNCATE TABLE t;                        Svuota la tabella, azzera l'identity
-                                         (in MySQL non si può annullare)
-DROP TABLE t;                            Elimina la tabella
-DROP TABLE IF EXISTS t;                  Elimina se esiste
-DROP TABLE t1, t2;                       Elimina più tabelle
+2. TABLES (DDL)
+---------------
+CREATE TABLE t (id INT PRIMARY KEY, name VARCHAR(50));   Create a table
+CREATE TABLE IF NOT EXISTS t (...);      Create if it does not exist
+CREATE TABLE t2 AS SELECT * FROM t;      Copy structure and data
+CREATE TABLE t2 AS SELECT * FROM t WHERE 1=0;   Copy structure only
+CREATE TABLE t2 LIKE t;                  Copy structure with indexes (MySQL)
+SELECT * INTO t2 FROM t;                 Copy a table (SS)
+SHOW TABLES;                             List tables (PG: \dt)
+DESCRIBE t;  /  DESC t;                  Show the columns
+SHOW COLUMNS FROM t;                     Show the columns
+SHOW CREATE TABLE t;                     Show the full DDL
+RENAME TABLE old TO new;                 Rename (MySQL)
+TRUNCATE TABLE t;                        Empty the table, reset the identity
+                                         (in MySQL it cannot be undone)
+DROP TABLE t;                            Delete the table
+DROP TABLE IF EXISTS t;                  Delete if it exists
+DROP TABLE t1, t2;                       Delete several tables
 
-Prova:
-CREATE TABLE emp_copy  AS SELECT * FROM employees;   -- struttura + dati
-CREATE TABLE emp_shape LIKE employees;               -- solo struttura
+Try it:
+CREATE TABLE emp_copy  AS SELECT * FROM employees;   -- structure + data
+CREATE TABLE emp_shape LIKE employees;               -- structure only
 DESCRIBE emp_copy;
-DROP TABLE IF EXISTS emp_copy, emp_shape;            -- pulizia
+DROP TABLE IF EXISTS emp_copy, emp_shape;            -- cleanup
 
 
 3. ALTER TABLE
 --------------
-ALTER TABLE t ADD col INT;                     Aggiunge una colonna
-ALTER TABLE t ADD col INT AFTER altra;         Aggiunge in una posizione (MySQL)
-ALTER TABLE t ADD col INT FIRST;               Aggiunge come prima colonna (MySQL)
-ALTER TABLE t ADD c1 INT, ADD c2 INT;          Aggiunge più colonne (MySQL)
-ALTER TABLE t DROP COLUMN col;                 Elimina una colonna
-ALTER TABLE t MODIFY col BIGINT;               Cambia tipo (MySQL, ORA)
-ALTER TABLE t ALTER COLUMN col TYPE BIGINT;    Cambia tipo (PG)
-ALTER TABLE t ALTER COLUMN col BIGINT;         Cambia tipo (SS)
-ALTER TABLE t CHANGE vecchio nuovo INT;        Rinomina + ridefinisce (MySQL)
-ALTER TABLE t RENAME COLUMN vecchio TO nuovo;  Rinomina colonna
-ALTER TABLE t RENAME TO nuova_t;               Rinomina tabella
-ALTER TABLE t ALTER COLUMN col SET DEFAULT 0;  Imposta valore predefinito
-ALTER TABLE t ALTER COLUMN col DROP DEFAULT;   Rimuove valore predefinito
-ALTER TABLE t MODIFY col INT NOT NULL;         Aggiunge NOT NULL (MySQL)
-ALTER TABLE t ALTER COLUMN col SET NOT NULL;   Aggiunge NOT NULL (PG)
-ALTER TABLE t AUTO_INCREMENT = 100;            Prossimo valore auto-increment
-ALTER TABLE t ENGINE = InnoDB;                 Cambia motore
-ALTER TABLE t CONVERT TO CHARACTER SET utf8mb4;  Cambia codifica
+ALTER TABLE t ADD col INT;                     Add a column
+ALTER TABLE t ADD col INT AFTER other;         Add at a position (MySQL)
+ALTER TABLE t ADD col INT FIRST;               Add as the first column (MySQL)
+ALTER TABLE t ADD c1 INT, ADD c2 INT;          Add several columns (MySQL)
+ALTER TABLE t DROP COLUMN col;                 Delete a column
+ALTER TABLE t MODIFY col BIGINT;               Change type (MySQL, ORA)
+ALTER TABLE t ALTER COLUMN col TYPE BIGINT;    Change type (PG)
+ALTER TABLE t ALTER COLUMN col BIGINT;         Change type (SS)
+ALTER TABLE t CHANGE old new INT;              Rename + redefine (MySQL)
+ALTER TABLE t RENAME COLUMN old TO new;        Rename a column
+ALTER TABLE t RENAME TO new_t;                 Rename a table
+ALTER TABLE t ALTER COLUMN col SET DEFAULT 0;  Set a default value
+ALTER TABLE t ALTER COLUMN col DROP DEFAULT;   Remove the default value
+ALTER TABLE t MODIFY col INT NOT NULL;         Add NOT NULL (MySQL)
+ALTER TABLE t ALTER COLUMN col SET NOT NULL;   Add NOT NULL (PG)
+ALTER TABLE t AUTO_INCREMENT = 100;            Next auto-increment value
+ALTER TABLE t ENGINE = InnoDB;                 Change the engine
+ALTER TABLE t CONVERT TO CHARACTER SET utf8mb4;  Change the encoding
 
-Prova:
+Try it:
 ALTER TABLE employees ADD bonus DECIMAL(8,2) DEFAULT 0 AFTER salary;
 ALTER TABLE employees RENAME COLUMN bonus TO annual_bonus;
 ALTER TABLE employees DROP COLUMN annual_bonus;
 
 
-4. VINCOLI
-----------
-col INT NOT NULL              Valore obbligatorio
-col INT UNIQUE                Nessun duplicato
-col INT PRIMARY KEY           Chiave primaria
-PRIMARY KEY (c1, c2)          Chiave primaria composta
-FOREIGN KEY (c) REFERENCES p(id)   Chiave esterna
-CHECK (age >= 18)             Controllo (applicato da MySQL 8.0.16+)
-col INT DEFAULT 0             Valore predefinito
-col INT AUTO_INCREMENT        Numero automatico (PG: SERIAL, SS: IDENTITY(1,1))
+4. CONSTRAINTS
+--------------
+col INT NOT NULL              Required value
+col INT UNIQUE                No duplicates
+col INT PRIMARY KEY           Primary key
+PRIMARY KEY (c1, c2)          Composite primary key
+FOREIGN KEY (c) REFERENCES p(id)   Foreign key
+CHECK (age >= 18)             Check (enforced by MySQL 8.0.16+)
+col INT DEFAULT 0             Default value
+col INT AUTO_INCREMENT        Automatic number (PG: SERIAL, SS: IDENTITY(1,1))
 ON DELETE CASCADE / SET NULL / RESTRICT / NO ACTION / SET DEFAULT
 ON UPDATE CASCADE / SET NULL / RESTRICT / NO ACTION
-CONSTRAINT nome ...           Dà un nome al vincolo
+CONSTRAINT name ...           Gives the constraint a name
 
-Modelli (t, d, fk non esistono nel database di prova):
+Templates (t, d, fk do not exist in the sample database):
 ALTER TABLE t ADD PRIMARY KEY (id);
 ALTER TABLE t ADD CONSTRAINT uq UNIQUE (email);
 ALTER TABLE t ADD CONSTRAINT fk FOREIGN KEY (dept_id) REFERENCES d(dept_id);
@@ -187,15 +187,15 @@ ALTER TABLE t DROP PRIMARY KEY;          -- MySQL
 ALTER TABLE t DROP FOREIGN KEY fk;       -- MySQL
 ALTER TABLE t DROP INDEX uq;             -- MySQL (unique)
 ALTER TABLE t DROP CHECK ck;             -- MySQL 8.0.16+
-ALTER TABLE t DROP CONSTRAINT nome;      -- PG / SS / ORA
-SET FOREIGN_KEY_CHECKS = 0;              -- disattiva (MySQL)
-SET FOREIGN_KEY_CHECKS = 1;              -- riattiva
+ALTER TABLE t DROP CONSTRAINT name;      -- PG / SS / ORA
+SET FOREIGN_KEY_CHECKS = 0;              -- disable (MySQL)
+SET FOREIGN_KEY_CHECKS = 1;              -- re-enable
 
-Prova (deve dare errore: il vincolo CHECK blocca il dato):
-INSERT INTO employees (name, age) VALUES ('Troppo Giovane', 15);
+Try it (it must fail: the CHECK constraint blocks the data):
+INSERT INTO employees (name, age) VALUES ('Too Young', 15);
 
 
-𝗣𝗔𝗥𝗧𝗘 𝟮 – 𝗗𝗔𝗧𝗜 𝗘 𝗤𝗨𝗘𝗥𝗬
+PART 2 – DATA AND QUERIES
 =====================================================
 
 5. INSERT / UPDATE / DELETE (DML)
@@ -205,12 +205,12 @@ INSERT INTO departments (dept_name, location) VALUES ('Legal', 'Chennai');
 INSERT INTO departments (dept_name, location) VALUES ('R&D','Pune'), ('Ops','Delhi');
 
 CREATE TABLE emp_backup LIKE employees;
-INSERT INTO emp_backup SELECT * FROM employees;           -- da una query
+INSERT INTO emp_backup SELECT * FROM employees;           -- from a query
 INSERT INTO emp_backup (name, salary) SELECT name, salary FROM employees WHERE salary > 100000;
 
-INSERT IGNORE INTO departments (dept_name) VALUES ('IT'); -- ignora duplicati (MySQL)
+INSERT IGNORE INTO departments (dept_name) VALUES ('IT'); -- ignore duplicates (MySQL)
 REPLACE INTO emp_backup (emp_id, name, salary) VALUES (1, 'Asha Rao', 99000);
-                                                          -- elimina + inserisce (MySQL)
+                                                          -- delete + insert (MySQL)
 
 -- UPSERT (MySQL 8.0.19+)
 INSERT INTO departments (dept_id, dept_name, location) VALUES (1,'IT','Bengaluru') AS new
@@ -235,13 +235,13 @@ DELETE FROM emp_backup WHERE emp_id = 1;
 DELETE e FROM emp_backup e JOIN departments d ON e.dept_id = d.dept_id
 WHERE d.dept_name = 'HR';                                    -- MySQL
 DELETE FROM emp_backup ORDER BY emp_id LIMIT 1;              -- MySQL
-DELETE FROM emp_backup;                                      -- tutte le righe
+DELETE FROM emp_backup;                                      -- all rows
 DROP TABLE emp_backup;
 
-ATTENZIONE: UPDATE o DELETE senza WHERE modificano TUTTE le righe.
-Prima prova la condizione con una SELECT.
+WARNING: UPDATE or DELETE without WHERE changes ALL the rows.
+Test the condition with a SELECT first.
 
--- MERGE (SS / ORA / PG 15+; non esiste in MySQL)
+-- MERGE (SS / ORA / PG 15+; does not exist in MySQL)
 MERGE INTO target t USING source s ON t.id = s.id
 WHEN MATCHED THEN UPDATE SET t.v = s.v
 WHEN NOT MATCHED THEN INSERT (id, v) VALUES (s.id, s.v);
@@ -251,29 +251,29 @@ WHEN NOT MATCHED THEN INSERT (id, v) VALUES (s.id, s.v);
 ---------------
 SELECT * FROM employees;
 SELECT name, salary FROM employees;
-SELECT DISTINCT dept_id FROM employees;                        -- valori unici
-SELECT name AS dipendente, salary * 12 AS annuale FROM employees;   -- alias
+SELECT DISTINCT dept_id FROM employees;                        -- unique values
+SELECT name AS employee, salary * 12 AS annual FROM employees; -- aliases
 SELECT name FROM employees WHERE salary > 60000;
 SELECT dept_id, COUNT(*) AS n FROM employees GROUP BY dept_id HAVING COUNT(*) > 1;
-SELECT * FROM employees ORDER BY dept_id ASC, salary DESC;     -- ordinamento
+SELECT * FROM employees ORDER BY dept_id ASC, salary DESC;     -- sorting
 SELECT * FROM employees LIMIT 3;
 SELECT * FROM employees LIMIT 3 OFFSET 3;
-SELECT * FROM employees LIMIT 3, 3;                            -- offset, quanti (MySQL)
+SELECT * FROM employees LIMIT 3, 3;                            -- offset, how many (MySQL)
 SELECT 1 + 1;
-SELECT COUNT(*) INTO @cnt FROM employees;                      -- in una variabile
+SELECT COUNT(*) INTO @cnt FROM employees;                      -- into a variable
 SELECT @cnt;
 
-Altri dialetti e blocchi (non funzionano in MySQL le prime due):
+Other dialects and blocks (the first two do not work in MySQL):
 -- SELECT TOP 3 * FROM employees;                      (SS)
 -- SELECT * FROM employees FETCH FIRST 3 ROWS ONLY;    (ORA / PG / SS)
 START TRANSACTION;
-SELECT * FROM employees WHERE emp_id = 1 FOR UPDATE;   -- blocca le righe
-SELECT * FROM employees WHERE emp_id = 1 FOR SHARE;    -- blocco condiviso
-ROLLBACK;                                              -- rilascia i blocchi
+SELECT * FROM employees WHERE emp_id = 1 FOR UPDATE;   -- locks the rows
+SELECT * FROM employees WHERE emp_id = 1 FOR SHARE;    -- shared lock
+ROLLBACK;                                              -- releases the locks
 
-Ordine in cui SCRIVI le clausole:
-SELECT [DISTINCT] colonne
-FROM tabella
+Order in which you WRITE the clauses:
+SELECT [DISTINCT] columns
+FROM table
 [JOIN ... ON ...]
 [WHERE ...]
 [GROUP BY ...]
@@ -282,31 +282,31 @@ FROM tabella
 [LIMIT ... OFFSET ...];
 
 
-7. OPERATORI E PAROLE CHIAVE
-----------------------------
-=  <>  !=  >  <  >=  <=       Confronto
-<=>                           Uguale che gestisce NULL (MySQL)
-AND, OR, NOT                  Logici
-BETWEEN x AND y               Intervallo, estremi inclusi
-NOT BETWEEN                   Fuori dall'intervallo
-IN (...) / NOT IN (...)       Elenco (attenzione ai NULL con NOT IN)
-LIKE 'A%'                     Inizia con A
-LIKE '%a'                     Finisce con a
-LIKE '%a%'                    Contiene a
-LIKE '_a%'                    Seconda lettera a
-ILIKE                         LIKE senza maiuscole/minuscole (PG)
-REGEXP / RLIKE                Espressione regolare (MySQL); ~ in PG
-IS NULL / IS NOT NULL         Test sul NULL
-EXISTS / NOT EXISTS           Esiste almeno una riga
-ANY / SOME / ALL              Confronto con un insieme
-+ - * / %   DIV   MOD         Aritmetici
-& | ^ ~ << >>                 Bit a bit
-||                            Concatenazione (PG, ORA)
-+                             Concatenazione (SS)
-COLLATE                       Sceglie il confronto dei caratteri
+7. OPERATORS AND KEYWORDS
+-------------------------
+=  <>  !=  >  <  >=  <=       Comparison
+<=>                           NULL-safe equality (MySQL)
+AND, OR, NOT                  Logical
+BETWEEN x AND y               Range, endpoints included
+NOT BETWEEN                   Outside the range
+IN (...) / NOT IN (...)       List (beware of NULLs with NOT IN)
+LIKE 'A%'                     Starts with A
+LIKE '%a'                     Ends with a
+LIKE '%a%'                    Contains a
+LIKE '_a%'                    Second letter is a
+ILIKE                         Case-insensitive LIKE (PG)
+REGEXP / RLIKE                Regular expression (MySQL); ~ in PG
+IS NULL / IS NOT NULL         NULL test
+EXISTS / NOT EXISTS           At least one row exists
+ANY / SOME / ALL              Comparison with a set
++ - * / %   DIV   MOD         Arithmetic
+& | ^ ~ << >>                 Bitwise
+||                            Concatenation (PG, ORA)
++                             Concatenation (SS)
+COLLATE                       Chooses the character comparison
 ESCAPE                        LIKE '50\%' ESCAPE '\\'
 
-Prova:
+Try it:
 SELECT name FROM employees WHERE name LIKE 'A%';
 SELECT name FROM employees WHERE name REGEXP '^[AEIOU]';
 SELECT name FROM employees WHERE email IS NULL;
@@ -314,342 +314,342 @@ SELECT name, salary FROM employees
 WHERE salary > ALL (SELECT salary FROM employees WHERE dept_id = 2);
 
 
-8. JOIN
--------
--- INNER: solo le righe che corrispondono
+8. JOINS
+--------
+-- INNER: only the rows that match
 SELECT e.name, d.dept_name FROM employees e INNER JOIN departments d ON e.dept_id = d.dept_id;
--- LEFT: tutti i dipendenti (Vikram: reparto NULL)
+-- LEFT: all employees (Vikram: department NULL)
 SELECT e.name, d.dept_name FROM employees e LEFT JOIN departments d ON e.dept_id = d.dept_id;
--- RIGHT: tutti i reparti (Finance: dipendente NULL)
+-- RIGHT: all departments (Finance: employee NULL)
 SELECT e.name, d.dept_name FROM employees e RIGHT JOIN departments d ON e.dept_id = d.dept_id;
--- CROSS: prodotto cartesiano
+-- CROSS: Cartesian product
 SELECT d.dept_name, e.name FROM departments d CROSS JOIN employees e;
 -- USING / NATURAL
 SELECT * FROM employees e JOIN departments d USING (dept_id);
 SELECT * FROM employees NATURAL JOIN departments;
 
--- Self join: dipendente e responsabile
-SELECT e.name AS dipendente, m.name AS responsabile
+-- Self join: employee and manager
+SELECT e.name AS employee, m.name AS manager
 FROM employees e LEFT JOIN employees m ON e.manager_id = m.emp_id;
 
--- Anti join: reparti senza dipendenti
+-- Anti join: departments with no employees
 SELECT d.dept_name FROM departments d
 LEFT JOIN employees e ON d.dept_id = e.dept_id
 WHERE e.emp_id IS NULL;
 
--- Join su più tabelle
+-- Join on multiple tables
 SELECT e.name, d.dept_name, o.amount
 FROM employees e
 JOIN departments d ON e.dept_id = d.dept_id
 JOIN orders o ON o.emp_id = e.emp_id;
 
--- FULL OUTER JOIN esiste in PG / SS / ORA. In MySQL si simula:
+-- FULL OUTER JOIN exists in PG / SS / ORA. In MySQL you simulate it:
 SELECT e.name, d.dept_name FROM employees e LEFT JOIN departments d ON e.dept_id = d.dept_id
 UNION
 SELECT e.name, d.dept_name FROM employees e RIGHT JOIN departments d ON e.dept_id = d.dept_id;
 
-Riepilogo:
-INNER            Righe presenti in entrambe
-LEFT             Tutta la sinistra + corrispondenze
-RIGHT            Tutta la destra + corrispondenze
-FULL             Tutte le righe di entrambe
-CROSS            Ogni combinazione
-LATERAL / CROSS APPLY   Sottoquery correlata per riga (PG, MySQL 8.0.14+ / SS)
+Summary:
+INNER            Rows present in both
+LEFT             All of the left + matches
+RIGHT            All of the right + matches
+FULL             All rows from both
+CROSS            Every combination
+LATERAL / CROSS APPLY   Correlated subquery per row (PG, MySQL 8.0.14+ / SS)
 
 
-9. OPERAZIONI SU INSIEMI
-------------------------
-SELECT dept_id FROM employees UNION     SELECT dept_id FROM departments;  -- senza duplicati
-SELECT dept_id FROM employees UNION ALL SELECT dept_id FROM departments;  -- con duplicati
-SELECT dept_id FROM departments INTERSECT SELECT dept_id FROM employees;  -- in comune (MySQL 8.0.31+)
-SELECT dept_id FROM departments EXCEPT    SELECT dept_id FROM employees;  -- solo a sinistra (ORA: MINUS)
+9. SET OPERATIONS
+-----------------
+SELECT dept_id FROM employees UNION     SELECT dept_id FROM departments;  -- without duplicates
+SELECT dept_id FROM employees UNION ALL SELECT dept_id FROM departments;  -- with duplicates
+SELECT dept_id FROM departments INTERSECT SELECT dept_id FROM employees;  -- in common (MySQL 8.0.31+)
+SELECT dept_id FROM departments EXCEPT    SELECT dept_id FROM employees;  -- only on the left (ORA: MINUS)
 
-Le due query devono avere lo stesso numero di colonne con tipi compatibili.
+The two queries must have the same number of columns with compatible types.
 
 
-10. SOTTOQUERY E CTE
---------------------
--- Scalare
+10. SUBQUERIES AND CTEs
+-----------------------
+-- Scalar
 SELECT name, salary FROM employees WHERE salary > (SELECT AVG(salary) FROM employees);
 -- IN
 SELECT name FROM employees WHERE emp_id IN (SELECT emp_id FROM orders);
--- Tabella derivata
-SELECT * FROM (SELECT emp_id, SUM(amount) AS totale FROM orders GROUP BY emp_id) x WHERE totale > 1000;
--- Correlata: guadagna più della media del proprio reparto
+-- Derived table
+SELECT * FROM (SELECT emp_id, SUM(amount) AS total FROM orders GROUP BY emp_id) x WHERE total > 1000;
+-- Correlated: earns more than the average of their own department
 SELECT name, salary FROM employees e
 WHERE salary > (SELECT AVG(salary) FROM employees WHERE dept_id = e.dept_id);
 -- EXISTS
 SELECT d.dept_name FROM departments d
 WHERE EXISTS (SELECT 1 FROM employees e WHERE e.dept_id = d.dept_id);
--- Nell'elenco SELECT
-SELECT name, (SELECT COUNT(*) FROM orders o WHERE o.emp_id = e.emp_id) AS n_ordini FROM employees e;
+-- In the SELECT list
+SELECT name, (SELECT COUNT(*) FROM orders o WHERE o.emp_id = e.emp_id) AS n_orders FROM employees e;
 
 -- CTE
-WITH media_reparto AS (
-  SELECT dept_id, AVG(salary) AS media FROM employees GROUP BY dept_id
+WITH dept_avg AS (
+  SELECT dept_id, AVG(salary) AS avg_salary FROM employees GROUP BY dept_id
 )
-SELECT e.name, e.salary, m.media
-FROM employees e JOIN media_reparto m ON e.dept_id = m.dept_id;
+SELECT e.name, e.salary, m.avg_salary
+FROM employees e JOIN dept_avg m ON e.dept_id = m.dept_id;
 
--- CTE ricorsiva: numeri da 1 a 10
+-- Recursive CTE: numbers from 1 to 10
 WITH RECURSIVE n AS (
   SELECT 1 AS x UNION ALL SELECT x + 1 FROM n WHERE x < 10
 )
 SELECT * FROM n;
 
--- CTE ricorsiva: catena gerarchica
-WITH RECURSIVE catena AS (
-  SELECT emp_id, name, manager_id, 1 AS livello FROM employees WHERE manager_id IS NULL
+-- Recursive CTE: hierarchy chain
+WITH RECURSIVE chain AS (
+  SELECT emp_id, name, manager_id, 1 AS level FROM employees WHERE manager_id IS NULL
   UNION ALL
-  SELECT e.emp_id, e.name, e.manager_id, c.livello + 1
-  FROM employees e JOIN catena c ON e.manager_id = c.emp_id
+  SELECT e.emp_id, e.name, e.manager_id, c.level + 1
+  FROM employees e JOIN chain c ON e.manager_id = c.emp_id
 )
-SELECT * FROM catena ORDER BY livello, emp_id;
+SELECT * FROM chain ORDER BY level, emp_id;
 
 
-𝗣𝗔𝗥𝗧𝗘 𝟯 – 𝗙𝗨𝗡𝗭𝗜𝗢𝗡𝗜
+PART 3 – FUNCTIONS
 =====================================================
 
-11. FUNZIONI DI AGGREGAZIONE
-----------------------------
-COUNT(*)                       Tutte le righe
-COUNT(col)                     Valori non NULL
-COUNT(DISTINCT col)            Valori unici non NULL
-SUM(col)  AVG(col)             Somma, media
-MIN(col)  MAX(col)             Minimo, massimo
-GROUP_CONCAT(col SEPARATOR ',')   Unisce i valori (MySQL)
-STRING_AGG(col, ',')           Unisce i valori (PG, SS)
-LISTAGG(col, ',')              Unisce i valori (ORA)
-STDDEV()  VARIANCE()           Statistica
-BIT_AND() BIT_OR() BIT_XOR()   Aggregati bit a bit
-JSON_ARRAYAGG() JSON_OBJECTAGG()   Aggregati JSON
-GROUP BY ... WITH ROLLUP       Subtotali (MySQL); PG/SS/ORA: ROLLUP(a,b)
-GROUP BY CUBE(a,b)             Tutte le combinazioni (PG/SS/ORA)
-GROUP BY GROUPING SETS (...)   Raggruppamenti personalizzati
+11. AGGREGATE FUNCTIONS
+-----------------------
+COUNT(*)                       All rows
+COUNT(col)                     Non-NULL values
+COUNT(DISTINCT col)            Unique non-NULL values
+SUM(col)  AVG(col)             Sum, average
+MIN(col)  MAX(col)             Minimum, maximum
+GROUP_CONCAT(col SEPARATOR ',')   Joins the values (MySQL)
+STRING_AGG(col, ',')           Joins the values (PG, SS)
+LISTAGG(col, ',')              Joins the values (ORA)
+STDDEV()  VARIANCE()           Statistics
+BIT_AND() BIT_OR() BIT_XOR()   Bitwise aggregates
+JSON_ARRAYAGG() JSON_OBJECTAGG()   JSON aggregates
+GROUP BY ... WITH ROLLUP       Subtotals (MySQL); PG/SS/ORA: ROLLUP(a,b)
+GROUP BY CUBE(a,b)             All combinations (PG/SS/ORA)
+GROUP BY GROUPING SETS (...)   Custom groupings
 
-Prova:
+Try it:
 SELECT COUNT(*), COUNT(email), COUNT(DISTINCT dept_id) FROM employees;   -- 8, 7, 3
-SELECT dept_id, COUNT(*) AS n, ROUND(AVG(salary),2) AS media, MAX(salary) AS massimo
+SELECT dept_id, COUNT(*) AS n, ROUND(AVG(salary),2) AS average, MAX(salary) AS maximum
 FROM employees GROUP BY dept_id;
 SELECT dept_id, GROUP_CONCAT(name ORDER BY name SEPARATOR ', ') AS team FROM employees GROUP BY dept_id;
 SELECT dept_id, SUM(salary) FROM employees GROUP BY dept_id WITH ROLLUP;
 
-COUNT(*) conta le righe; COUNT(col) salta i NULL.
+COUNT(*) counts rows; COUNT(col) skips NULLs.
 
 
-12. FUNZIONI PER STRINGHE
--------------------------
-UPPER(s) / LOWER(s)                   Maiuscolo / minuscolo
-LENGTH(s) / CHAR_LENGTH(s)            Byte / caratteri (SS: LEN)
-CONCAT(a,b,...) / CONCAT_WS(sep,a,b)  Unisce stringhe
-SUBSTRING(s,pos,len) / SUBSTR         Sottostringa (parte da 1)
-LEFT(s,n) / RIGHT(s,n)                Primi / ultimi n caratteri
-TRIM(s) / LTRIM(s) / RTRIM(s)         Toglie gli spazi
-TRIM(BOTH 'x' FROM s)                 Toglie caratteri specifici
-REPLACE(s,da,a)                       Sostituisce testo
-REVERSE(s)                            Inverte
-INSTR(s,sub) / LOCATE(sub,s)          Trova la posizione
-LPAD(s,n,p) / RPAD(s,n,p)             Riempie fino a n caratteri
-REPEAT(s,n)                           Ripete
-SPACE(n)                              n spazi
-ASCII(c) / CHAR(n)                    Carattere / codice
-FORMAT(n,d)                           Formatta il numero (1,234.50)
-STRCMP(a,b)                           Confronta
-FIELD(s,a,b,c)                        Indice nell'elenco
-FIND_IN_SET(s,'a,b,c')                Posizione in una lista CSV
-SUBSTRING_INDEX(s,delim,n)            Divide per delimitatore (MySQL)
-SPLIT_PART(s,delim,n)                 Divide (PG)
-INITCAP(s)                            Iniziali maiuscole (PG/ORA)
-TRANSLATE(s,da,a)                     Sostituisce carattere per carattere (PG/ORA)
-INSERT(s,pos,len,nuovo)               Inserisce / sostituisce una parte (OVERLAY in PG)
-SOUNDEX(s)                            Codice fonetico
+12. STRING FUNCTIONS
+--------------------
+UPPER(s) / LOWER(s)                   Uppercase / lowercase
+LENGTH(s) / CHAR_LENGTH(s)            Bytes / characters (SS: LEN)
+CONCAT(a,b,...) / CONCAT_WS(sep,a,b)  Joins strings
+SUBSTRING(s,pos,len) / SUBSTR         Substring (starts at 1)
+LEFT(s,n) / RIGHT(s,n)                First / last n characters
+TRIM(s) / LTRIM(s) / RTRIM(s)         Removes spaces
+TRIM(BOTH 'x' FROM s)                 Removes specific characters
+REPLACE(s,from,to)                    Replaces text
+REVERSE(s)                            Reverses
+INSTR(s,sub) / LOCATE(sub,s)          Finds the position
+LPAD(s,n,p) / RPAD(s,n,p)             Pads up to n characters
+REPEAT(s,n)                           Repeats
+SPACE(n)                              n spaces
+ASCII(c) / CHAR(n)                    Character / code
+FORMAT(n,d)                           Formats the number (1,234.50)
+STRCMP(a,b)                           Compares
+FIELD(s,a,b,c)                        Index in the list
+FIND_IN_SET(s,'a,b,c')                Position in a CSV list
+SUBSTRING_INDEX(s,delim,n)            Splits by delimiter (MySQL)
+SPLIT_PART(s,delim,n)                 Splits (PG)
+INITCAP(s)                            Capitalized initials (PG/ORA)
+TRANSLATE(s,from,to)                  Replaces character by character (PG/ORA)
+INSERT(s,pos,len,new)                 Inserts / replaces a part (OVERLAY in PG)
+SOUNDEX(s)                            Phonetic code
 REGEXP_REPLACE() REGEXP_SUBSTR() REGEXP_LIKE() REGEXP_INSTR()   Regex (MySQL 8+)
-QUOTE(s)                              Protegge la stringa
-HEX(s) / UNHEX(s)                     Esadecimale
+QUOTE(s)                              Escapes the string
+HEX(s) / UNHEX(s)                     Hexadecimal
 MD5(s) / SHA2(s,256)                  Hash
 TO_BASE64(s) / FROM_BASE64(s)         Base64
 
-Prova:
+Try it:
 SELECT UPPER(name), LENGTH(name), LEFT(name,3), SUBSTRING(name,1,4) FROM employees LIMIT 3;
-SELECT CONCAT(name, ' <', IFNULL(email,'nessuna email'), '>') AS contatto FROM employees;
-SELECT SUBSTRING_INDEX(email,'@',1) AS utente, SUBSTRING_INDEX(email,'@',-1) AS dominio
+SELECT CONCAT(name, ' <', IFNULL(email,'no email'), '>') AS contact FROM employees;
+SELECT SUBSTRING_INDEX(email,'@',1) AS user, SUBSTRING_INDEX(email,'@',-1) AS domain
 FROM employees WHERE email IS NOT NULL;
 SELECT REPLACE('2024-01-15','-','/'), LPAD(7,3,'0'), REPEAT('ab',3), REVERSE('SQL');
 SELECT REGEXP_REPLACE('a1b22c333','[0-9]+','#');     -- a#b#c#
-SELECT SHA2('segreto',256);
+SELECT SHA2('secret',256);
 
 
-13. FUNZIONI NUMERICHE
-----------------------
-ROUND(n,d)                     Arrotonda
-CEIL(n) / CEILING(n)           Per eccesso
-FLOOR(n)                       Per difetto
-TRUNCATE(n,d)                  Taglia i decimali (PG/ORA: TRUNC)
-ABS(n)                         Valore assoluto
-MOD(a,b) / a % b               Resto
-POWER(a,b) / POW               Potenza
-SQRT(n)                        Radice quadrata
-EXP(n) LN(n) LOG(n) LOG10(n) LOG2(n)   Esponenziale e logaritmi
+13. NUMERIC FUNCTIONS
+---------------------
+ROUND(n,d)                     Rounds
+CEIL(n) / CEILING(n)           Round up
+FLOOR(n)                       Round down
+TRUNCATE(n,d)                  Cuts off the decimals (PG/ORA: TRUNC)
+ABS(n)                         Absolute value
+MOD(a,b) / a % b               Remainder
+POWER(a,b) / POW               Power
+SQRT(n)                        Square root
+EXP(n) LN(n) LOG(n) LOG10(n) LOG2(n)   Exponential and logarithms
 SIGN(n)                        -1 / 0 / 1
-RAND()                         Casuale tra 0 e 1 (PG: RANDOM())
-GREATEST(a,b,...) / LEAST(a,b,...)     Massimo / minimo tra valori
-PI()                           Pi greco
-SIN() COS() TAN() ASIN() ACOS() ATAN() Trigonometria
-DEGREES() / RADIANS()          Conversione angoli
-CONV(n,da,a)                   Cambio di base
-DIV                            Divisione intera (MySQL)
+RAND()                         Random between 0 and 1 (PG: RANDOM())
+GREATEST(a,b,...) / LEAST(a,b,...)     Maximum / minimum among values
+PI()                           Pi
+SIN() COS() TAN() ASIN() ACOS() ATAN() Trigonometry
+DEGREES() / RADIANS()          Angle conversion
+CONV(n,from,to)                Base conversion
+DIV                            Integer division (MySQL)
 
-Prova:
+Try it:
 SELECT ROUND(3.14159,2), CEIL(4.1), FLOOR(4.9), TRUNCATE(4.987,1), ABS(-5);   -- 3.14, 5, 4, 4.9, 5
 SELECT MOD(17,5), 17 % 5, 17 DIV 5, POWER(2,10), SQRT(144), SIGN(-9);         -- 2, 2, 3, 1024, 12, -1
 SELECT GREATEST(3,9,2), LEAST(3,9,2), CONV('FF',16,10);                       -- 9, 2, 255
-SELECT name FROM employees ORDER BY RAND() LIMIT 1;                           -- dipendente a caso
+SELECT name FROM employees ORDER BY RAND() LIMIT 1;                           -- a random employee
 
 
-14. FUNZIONI DATA E ORA
------------------------
-NOW() / CURRENT_TIMESTAMP / SYSDATE()   Data e ora attuali (SS: GETDATE(), ORA: SYSDATE)
-CURDATE() / CURRENT_DATE                Data attuale
-CURTIME() / CURRENT_TIME                Ora attuale
+14. DATE AND TIME FUNCTIONS
+---------------------------
+NOW() / CURRENT_TIMESTAMP / SYSDATE()   Current date and time (SS: GETDATE(), ORA: SYSDATE)
+CURDATE() / CURRENT_DATE                Current date
+CURTIME() / CURRENT_TIME                Current time
 UTC_TIMESTAMP() / UTC_DATE()            UTC
-DATE(x) / TIME(x)                       Estrae data / ora
-YEAR(x) MONTH(x) DAY(x) HOUR(x) MINUTE(x) SECOND(x)   Parti
+DATE(x) / TIME(x)                       Extracts date / time
+YEAR(x) MONTH(x) DAY(x) HOUR(x) MINUTE(x) SECOND(x)   Parts
 QUARTER(x) WEEK(x) WEEKDAY(x) DAYOFWEEK(x) DAYOFMONTH(x) DAYOFYEAR(x)
-DAYNAME(x) / MONTHNAME(x)               Nomi (in inglese per impostazione predefinita)
-EXTRACT(unità FROM x)                   Estrazione standard
-DATE_ADD(x, INTERVAL n unità)           Aggiunge
-DATE_SUB(x, INTERVAL n unità)           Sottrae
-x + INTERVAL 7 DAY                      Aggiunge un intervallo
-DATEDIFF(d1,d2)                         Giorni tra due date (SS: DATEDIFF(day,d1,d2))
-TIMESTAMPDIFF(unità,d1,d2)              Differenza in una unità
-TIMEDIFF(t1,t2)                         Differenza di orario
-DATE_FORMAT(x,'%Y-%m-%d')               Formatta (PG: TO_CHAR, SS: FORMAT)
-STR_TO_DATE(s,'%d-%m-%Y')               Legge un testo (PG/ORA: TO_DATE)
-LAST_DAY(x)                             Ultimo giorno del mese
-MAKEDATE(a,giorno_anno) MAKETIME(h,m,s) Costruisce data / ora
-FROM_UNIXTIME(n) / UNIX_TIMESTAMP(x)    Conversione da/verso epoch
-TO_DAYS(x) / FROM_DAYS(n)               Numero di giorno
-SEC_TO_TIME(n) / TIME_TO_SEC(t)         Conversione secondi
-AGE(d1,d2)                              Intervallo (PG)
-DATE_TRUNC('month', x)                  Tronca (PG)
+DAYNAME(x) / MONTHNAME(x)               Names (in English by default)
+EXTRACT(unit FROM x)                    Standard extraction
+DATE_ADD(x, INTERVAL n unit)            Adds
+DATE_SUB(x, INTERVAL n unit)            Subtracts
+x + INTERVAL 7 DAY                      Adds an interval
+DATEDIFF(d1,d2)                         Days between two dates (SS: DATEDIFF(day,d1,d2))
+TIMESTAMPDIFF(unit,d1,d2)               Difference in a given unit
+TIMEDIFF(t1,t2)                         Time difference
+DATE_FORMAT(x,'%Y-%m-%d')               Formats (PG: TO_CHAR, SS: FORMAT)
+STR_TO_DATE(s,'%d-%m-%Y')               Parses text (PG/ORA: TO_DATE)
+LAST_DAY(x)                             Last day of the month
+MAKEDATE(year,day_of_year) MAKETIME(h,m,s)   Builds a date / time
+FROM_UNIXTIME(n) / UNIX_TIMESTAMP(x)    Conversion from/to epoch
+TO_DAYS(x) / FROM_DAYS(n)               Day number
+SEC_TO_TIME(n) / TIME_TO_SEC(t)         Seconds conversion
+AGE(d1,d2)                              Interval (PG)
+DATE_TRUNC('month', x)                  Truncates (PG)
 DATEADD(day,7,x)  DATEPART(year,x)      (SS)
 ADD_MONTHS(x,n)  MONTHS_BETWEEN(a,b)    (ORA)
 
-Unità: MICROSECOND, SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, YEAR
+Units: MICROSECOND, SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, YEAR
 
-Codici di formato: %Y anno | %y anno a 2 cifre | %m mese (01-12) | %M nome mese |
-%b mese breve | %d giorno | %e giorno senza zero | %H ore 24h | %h ore 12h |
-%i minuti | %s secondi | %p AM/PM | %W nome giorno | %a giorno breve | %j giorno dell'anno
+Format codes: %Y year | %y 2-digit year | %m month (01-12) | %M month name |
+%b short month | %d day | %e day without zero | %H hours 24h | %h hours 12h |
+%i minutes | %s seconds | %p AM/PM | %W day name | %a short day | %j day of year
 
-Prova:
+Try it:
 SELECT NOW(), CURDATE(), CURTIME();
-SELECT name, hire_date, YEAR(hire_date) AS anno, MONTHNAME(hire_date) AS mese FROM employees;
-SELECT name, TIMESTAMPDIFF(YEAR, hire_date, CURDATE()) AS anni_di_servizio FROM employees;
+SELECT name, hire_date, YEAR(hire_date) AS year, MONTHNAME(hire_date) AS month FROM employees;
+SELECT name, TIMESTAMPDIFF(YEAR, hire_date, CURDATE()) AS years_of_service FROM employees;
 SELECT DATE_ADD('2024-01-31', INTERVAL 1 MONTH), '2024-01-15' + INTERVAL 7 DAY, LAST_DAY('2024-02-10');
 SELECT DATEDIFF('2024-12-25','2024-01-01');                -- 359
 SELECT DATE_FORMAT('2024-03-05','%d %b %Y, %W');           -- 05 Mar 2024, Tuesday
 SELECT STR_TO_DATE('15-08-2024','%d-%m-%Y');               -- 2024-08-15
-SELECT YEAR(order_date) AS anno, MONTH(order_date) AS mese, SUM(amount)
-FROM orders GROUP BY anno, mese ORDER BY anno, mese;
+SELECT YEAR(order_date) AS year, MONTH(order_date) AS month, SUM(amount)
+FROM orders GROUP BY year, month ORDER BY year, month;
 
 
-15. CONDIZIONI E FUNZIONI SUI NULL
-----------------------------------
-CASE WHEN c THEN a ELSE b END           Se-altrimenti (standard)
-CASE col WHEN 1 THEN 'a' WHEN 2 THEN 'b' END   CASE semplice
-IF(cond, si, no)                        Se in linea (MySQL)
-IIF(cond, si, no)                       Se in linea (SS)
-IFNULL(a,b)                             b se a è NULL (MySQL)
+15. CONDITIONS AND NULL FUNCTIONS
+---------------------------------
+CASE WHEN c THEN a ELSE b END           If-else (standard)
+CASE col WHEN 1 THEN 'a' WHEN 2 THEN 'b' END   Simple CASE
+IF(cond, yes, no)                       Inline if (MySQL)
+IIF(cond, yes, no)                      Inline if (SS)
+IFNULL(a,b)                             b if a is NULL (MySQL)
 ISNULL(a,b)                             (SS)
 NVL(a,b)  NVL2(a,b,c)                   (ORA)
-COALESCE(a,b,c)                         Primo valore non NULL (standard)
-NULLIF(a,b)                             NULL se a = b
-GREATEST() / LEAST()                    Massimo / minimo tra colonne
-DECODE(col,v1,r1,v2,r2,predef)          (ORA)
+COALESCE(a,b,c)                         First non-NULL value (standard)
+NULLIF(a,b)                             NULL if a = b
+GREATEST() / LEAST()                    Maximum / minimum across columns
+DECODE(col,v1,r1,v2,r2,default)         (ORA)
 
-Prova:
+Try it:
 SELECT name, salary,
-  CASE WHEN salary >= 70000 THEN 'Alto'
-       WHEN salary >= 55000 THEN 'Medio'
-       ELSE 'Basso' END AS fascia
+  CASE WHEN salary >= 70000 THEN 'High'
+       WHEN salary >= 55000 THEN 'Medium'
+       ELSE 'Low' END AS band
 FROM employees;
 
-SELECT name, IF(dept_id IS NULL, 'Senza reparto', 'Assegnato') AS stato FROM employees;
-SELECT name, COALESCE(email, 'nessuna-email') FROM employees;
+SELECT name, IF(dept_id IS NULL, 'No department', 'Assigned') AS status FROM employees;
+SELECT name, COALESCE(email, 'no-email') FROM employees;
 SELECT NULLIF(10, 10), NULLIF(10, 5);       -- NULL, 10
-SELECT 100 / NULLIF(0, 0);                  -- NULL invece di un errore di divisione per zero
+SELECT 100 / NULLIF(0, 0);                  -- NULL instead of a division-by-zero error
 
 
-16. CONVERSIONE DI TIPO
------------------------
+16. TYPE CONVERSION
+-------------------
 SELECT CAST('123' AS SIGNED), CAST(12.3456 AS DECIMAL(10,2)), CAST('2024-05-01' AS DATE);
 SELECT CAST(NOW() AS DATE), CAST(65 AS CHAR), CONVERT('42', SIGNED), CONVERT('abc' USING utf8mb4);
-SELECT '10' + 5;                            -- 15 (conversione implicita)
+SELECT '10' + 5;                            -- 15 (implicit conversion)
 
-Altri dialetti:
-x::INT                                      (PG, forma abbreviata)
+Other dialects:
+x::INT                                      (PG, shorthand)
 TO_CHAR(x,'fmt')  TO_NUMBER(s)  TO_DATE(s,'fmt')   (PG / ORA)
-TRY_CAST(x AS INT)  TRY_CONVERT(...)        (SS: NULL se fallisce)
+TRY_CAST(x AS INT)  TRY_CONVERT(...)        (SS: NULL if it fails)
 
 
-17. FUNZIONI FINESTRA (WINDOW)
-------------------------------
-Forma: funzione() OVER (PARTITION BY a ORDER BY b ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
+17. WINDOW FUNCTIONS
+--------------------
+Form: function() OVER (PARTITION BY a ORDER BY b ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)
 
-ROW_NUMBER()                   Numero di riga unico
-RANK()                         Posizione con salti
-DENSE_RANK()                   Posizione senza salti
-NTILE(n)                       Divide in n gruppi
-PERCENT_RANK()                 Posizione relativa 0-1
-CUME_DIST()                    Distribuzione cumulativa
-LAG(col,n,predef)              Valore della riga precedente
-LEAD(col,n,predef)             Valore della riga successiva
+ROW_NUMBER()                   Unique row number
+RANK()                         Rank with gaps
+DENSE_RANK()                   Rank without gaps
+NTILE(n)                       Splits into n groups
+PERCENT_RANK()                 Relative rank 0-1
+CUME_DIST()                    Cumulative distribution
+LAG(col,n,default)             Value from the previous row
+LEAD(col,n,default)            Value from the next row
 FIRST_VALUE(col) / LAST_VALUE(col) / NTH_VALUE(col,n)
-SUM() AVG() COUNT() MIN() MAX() OVER (...)   Aggregati correnti / per gruppo
-WINDOW w AS (PARTITION BY ...)  Finestra con nome
+SUM() AVG() COUNT() MIN() MAX() OVER (...)   Running / per-group aggregates
+WINDOW w AS (PARTITION BY ...)  Named window
 
-Parole per il frame: ROWS, RANGE, UNBOUNDED PRECEDING, n PRECEDING, CURRENT ROW,
+Frame keywords: ROWS, RANGE, UNBOUNDED PRECEDING, n PRECEDING, CURRENT ROW,
 n FOLLOWING, UNBOUNDED FOLLOWING.
 
-Prova:
--- Classifica degli stipendi nel reparto
+Try it:
+-- Salary ranking within the department
 SELECT name, dept_id, salary,
   ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rn,
   RANK()       OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rnk,
   DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS drnk
 FROM employees;
 
--- Il più pagato di ogni reparto
+-- The highest paid in each department
 SELECT * FROM (
   SELECT name, dept_id, salary,
          RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS r
   FROM employees
 ) t WHERE r = 1;
 
--- Totale progressivo, precedente e successivo
+-- Running total, previous and next
 SELECT order_id, order_date, amount,
-  SUM(amount) OVER (ORDER BY order_date, order_id) AS totale_progressivo,
-  LAG(amount)  OVER (ORDER BY order_date, order_id) AS precedente,
-  LEAD(amount) OVER (ORDER BY order_date, order_id) AS successivo
+  SUM(amount) OVER (ORDER BY order_date, order_id) AS running_total,
+  LAG(amount)  OVER (ORDER BY order_date, order_id) AS previous,
+  LEAD(amount) OVER (ORDER BY order_date, order_id) AS next
 FROM orders;
 
--- Media mobile su 3 righe e quota sul totale del reparto
-SELECT order_id, AVG(amount) OVER (ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS media_mobile FROM orders;
-SELECT name, dept_id, salary, ROUND(100 * salary / SUM(salary) OVER (PARTITION BY dept_id), 1) AS pct_reparto FROM employees;
+-- 3-row moving average and share of the department total
+SELECT order_id, AVG(amount) OVER (ORDER BY order_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS moving_avg FROM orders;
+SELECT name, dept_id, salary, ROUND(100 * salary / SUM(salary) OVER (PARTITION BY dept_id), 1) AS dept_pct FROM employees;
 
--- Finestra con nome + NTILE
+-- Named window + NTILE
 SELECT name, salary, NTILE(4) OVER w AS quartile FROM employees WINDOW w AS (ORDER BY salary);
 
 
-18. FUNZIONI JSON
------------------
+18. JSON FUNCTIONS
+------------------
 CREATE TABLE products (id INT PRIMARY KEY AUTO_INCREMENT, info JSON);
 INSERT INTO products (info) VALUES
   ('{"name":"Laptop","price":55000,"tags":["tech","work"]}'),
   ('{"name":"Desk","price":12000,"tags":["furniture"]}');
 
 SELECT JSON_EXTRACT(info,'$.name') FROM products;             -- "Laptop"
-SELECT info->'$.name', info->>'$.name' FROM products;         -- con / senza virgolette
+SELECT info->'$.name', info->>'$.name' FROM products;         -- with / without quotes
 SELECT JSON_OBJECT('k', 1, 'x', 'y'), JSON_ARRAY(1,2,3);
 UPDATE products SET info = JSON_SET(info, '$.price', 50000) WHERE id = 1;
 UPDATE products SET info = JSON_REMOVE(info, '$.tags') WHERE id = 2;
@@ -659,123 +659,123 @@ SELECT jt.* FROM products p,
   JSON_TABLE(p.info, '$' COLUMNS (name VARCHAR(50) PATH '$.name', price INT PATH '$.price')) jt;
 DROP TABLE products;
 
-Altre funzioni: JSON_INSERT(), JSON_REPLACE(), JSON_ARRAYAGG(), JSON_OBJECTAGG().
+Other functions: JSON_INSERT(), JSON_REPLACE(), JSON_ARRAYAGG(), JSON_OBJECTAGG().
 PG: col->'name'  col->>'name'  col @> '{"a":1}'  jsonb_set(...)
 SS: JSON_VALUE(col,'$.name')  OPENJSON(col)  FOR JSON PATH
 
 
-𝗣𝗔𝗥𝗧𝗘 𝟰 – 𝗢𝗚𝗚𝗘𝗧𝗧𝗜 𝗘 𝗣𝗥𝗢𝗚𝗥𝗔𝗠𝗠𝗔𝗭𝗜𝗢𝗡𝗘
+PART 4 – OBJECTS AND PROGRAMMING
 =====================================================
 
-19. VISTE
+19. VIEWS
 ---------
 CREATE VIEW v_it AS SELECT emp_id, name, salary FROM employees WHERE dept_id = 1;
 CREATE OR REPLACE VIEW v_it AS SELECT emp_id, name, salary, hire_date FROM employees WHERE dept_id = 1;
-CREATE VIEW v_economici AS SELECT * FROM employees WHERE salary < 60000 WITH CHECK OPTION;
-                                  -- blocca le righe che uscirebbero dalla vista
+CREATE VIEW v_cheap AS SELECT * FROM employees WHERE salary < 60000 WITH CHECK OPTION;
+                                  -- blocks rows that would fall outside the view
 SELECT * FROM v_it;
 ALTER VIEW v_it AS SELECT emp_id, name FROM employees WHERE dept_id = 1;
 SHOW FULL TABLES WHERE Table_type = 'VIEW';
 SHOW CREATE VIEW v_it;
-DROP VIEW IF EXISTS v_it, v_economici;
+DROP VIEW IF EXISTS v_it, v_cheap;
 
-Solo PG / ORA:
+PG / ORA only:
 CREATE MATERIALIZED VIEW mv AS SELECT ...;
 REFRESH MATERIALIZED VIEW mv;     -- PG
 
 
-20. INDICI
-----------
+20. INDEXES
+-----------
 CREATE INDEX idx_dept ON employees (dept_id);
-CREATE INDEX idx_dept_sal ON employees (dept_id, salary);     -- composto (regola del prefisso sinistro)
+CREATE INDEX idx_dept_sal ON employees (dept_id, salary);     -- composite (leftmost prefix rule)
 CREATE FULLTEXT INDEX idx_ft ON departments (dept_name, location);   -- MySQL
 CREATE INDEX idx_sal_desc ON employees (salary DESC);         -- MySQL 8+
-CREATE INDEX idx_name5 ON employees (name(5));                -- indice sul prefisso (MySQL)
+CREATE INDEX idx_name5 ON employees (name(5));                -- prefix index (MySQL)
 
 SHOW INDEX FROM employees;
 ALTER TABLE employees ADD INDEX idx_age (age);
-ALTER TABLE employees ALTER INDEX idx_age INVISIBLE;          -- MySQL 8+: nascosto all'ottimizzatore
+ALTER TABLE employees ALTER INDEX idx_age INVISIBLE;          -- MySQL 8+: hidden from the optimizer
 DROP INDEX idx_age ON employees;                              -- MySQL / SS  (PG/ORA: DROP INDEX idx_age;)
 
-SELECT * FROM departments WHERE MATCH(dept_name, location) AGAINST('Delhi');   -- usa il FULLTEXT
+SELECT * FROM departments WHERE MATCH(dept_name, location) AGAINST('Delhi');   -- uses the FULLTEXT
 
-PG: indice parziale  CREATE INDEX idx ON t (col) WHERE attivo;
-PG: su espressione   CREATE INDEX idx ON t (LOWER(email));
-SS: colonne incluse  CREATE INDEX idx ON t (a) INCLUDE (b);
+PG: partial index      CREATE INDEX idx ON t (col) WHERE active;
+PG: expression index   CREATE INDEX idx ON t (LOWER(email));
+SS: included columns   CREATE INDEX idx ON t (a) INCLUDE (b);
 
-Consiglio: indicizza le colonne che usi in filtri, join e ordinamenti.
-Troppi indici rallentano le scritture.
+Tip: index the columns you use in filters, joins and sorting.
+Too many indexes slow down writes.
 
 
-21. TRANSAZIONI (TCL)
----------------------
-START TRANSACTION;               -- oppure BEGIN
+21. TRANSACTIONS (TCL)
+----------------------
+START TRANSACTION;               -- or BEGIN
 UPDATE employees SET salary = salary - 1000 WHERE emp_id = 2;
 UPDATE employees SET salary = salary + 1000 WHERE emp_id = 3;
-COMMIT;                          -- salva
+COMMIT;                          -- save
 
 START TRANSACTION;
 DELETE FROM orders WHERE emp_id = 6;
-ROLLBACK;                        -- annulla tutto
+ROLLBACK;                        -- undo everything
 
 START TRANSACTION;
 UPDATE employees SET age = age + 1 WHERE emp_id = 1;
 SAVEPOINT sp1;
 UPDATE employees SET age = age + 1 WHERE emp_id = 2;
-ROLLBACK TO SAVEPOINT sp1;       -- annulla solo il secondo update
+ROLLBACK TO SAVEPOINT sp1;       -- undo only the second update
 RELEASE SAVEPOINT sp1;
 COMMIT;
 
-SET autocommit = 0;              -- commit manuale
+SET autocommit = 0;              -- manual commit
 SET autocommit = 1;
-SET TRANSACTION ISOLATION LEVEL READ COMMITTED;   -- vale per la transazione successiva
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;   -- applies to the next transaction
 SELECT @@transaction_isolation;
 
-Livelli di isolamento:
-READ UNCOMMITTED   lettura sporca: sì | non ripetibile: sì | fantasma: sì
-READ COMMITTED     lettura sporca: no | non ripetibile: sì | fantasma: sì
-REPEATABLE READ    lettura sporca: no | non ripetibile: no | fantasma: quasi mai (InnoDB)
-                   (predefinito in MySQL)
-SERIALIZABLE       lettura sporca: no | non ripetibile: no | fantasma: no
+Isolation levels:
+READ UNCOMMITTED   dirty read: yes | non-repeatable: yes | phantom: yes
+READ COMMITTED     dirty read: no  | non-repeatable: yes | phantom: yes
+REPEATABLE READ    dirty read: no  | non-repeatable: no  | phantom: almost never (InnoDB)
+                   (default in MySQL)
+SERIALIZABLE       dirty read: no  | non-repeatable: no  | phantom: no
 
-ACID: Atomicità, Coerenza, Isolamento, Durabilità.
-Le istruzioni DDL (CREATE, DROP, TRUNCATE) fanno commit automatico in MySQL.
+ACID: Atomicity, Consistency, Isolation, Durability.
+DDL statements (CREATE, DROP, TRUNCATE) commit automatically in MySQL.
 
 
-22. UTENTI E PERMESSI (DCL)
----------------------------
+22. USERS AND PERMISSIONS (DCL)
+-------------------------------
 CREATE USER 'alice'@'localhost' IDENTIFIED BY 'Str0ng#Pass';
-CREATE USER 'bob'@'%' IDENTIFIED BY 'Str0ng#Pass2';           -- da qualsiasi host
+CREATE USER 'bob'@'%' IDENTIFIED BY 'Str0ng#Pass2';           -- from any host
 
 GRANT SELECT ON sql_cheatsheet.* TO 'alice'@'localhost';
 GRANT SELECT, INSERT, UPDATE ON sql_cheatsheet.employees TO 'alice'@'localhost';
 GRANT ALL PRIVILEGES ON sql_cheatsheet.* TO 'bob'@'%' WITH GRANT OPTION;
 -- GRANT EXECUTE ON PROCEDURE sql_cheatsheet.raise_salary TO 'alice'@'localhost';
---   (eseguila dopo la sezione 23, quando la procedura esiste)
+--   (run it after section 23, when the procedure exists)
 
 SHOW GRANTS FOR 'alice'@'localhost';
 REVOKE INSERT ON sql_cheatsheet.employees FROM 'alice'@'localhost';
 REVOKE ALL PRIVILEGES, GRANT OPTION FROM 'bob'@'%';
 
 ALTER USER 'alice'@'localhost' IDENTIFIED BY 'N3w#Pass';
-RENAME USER 'bob'@'%' TO 'roberto'@'%';
-DROP USER 'alice'@'localhost', 'roberto'@'%';
+RENAME USER 'bob'@'%' TO 'robert'@'%';
+DROP USER 'alice'@'localhost', 'robert'@'%';
 FLUSH PRIVILEGES;
 
--- Ruoli (MySQL 8+)
-CREATE ROLE 'lettore';
-GRANT SELECT ON sql_cheatsheet.* TO 'lettore';
-DROP ROLE 'lettore';
+-- Roles (MySQL 8+)
+CREATE ROLE 'reader';
+GRANT SELECT ON sql_cheatsheet.* TO 'reader';
+DROP ROLE 'reader';
 
 
-23. PROCEDURE E FUNZIONI MEMORIZZATE
-------------------------------------
+23. STORED PROCEDURES AND FUNCTIONS
+-----------------------------------
 DELIMITER //
 
 CREATE PROCEDURE raise_salary(IN p_dept INT, IN p_pct DECIMAL(5,2))
 BEGIN
     UPDATE employees SET salary = salary * (1 + p_pct / 100) WHERE dept_id = p_dept;
-    SELECT ROW_COUNT() AS righe_modificate;
+    SELECT ROW_COUNT() AS rows_changed;
 END //
 
 CREATE PROCEDURE dept_stats(IN p_dept INT, OUT p_count INT, OUT p_avg DECIMAL(10,2))
@@ -802,17 +802,17 @@ SHOW CREATE PROCEDURE raise_salary;
 DROP PROCEDURE IF EXISTS dept_stats;
 DROP FUNCTION IF EXISTS annual_salary;
 
-Note:
-- DELIMITER è un comando del CLIENT, non SQL. Funziona in mysql CLI e MySQL
-  Workbench. In phpMyAdmin o DBeaver imposta il delimitatore nell'opzione del
-  programma e cancella le righe DELIMITER. Molti editor SQL online non lo supportano.
-- Modalità dei parametri: IN (predefinita), OUT, INOUT.
-- Se la creazione di una funzione dà un errore sul binary log, serve:
-  SET GLOBAL log_bin_trust_function_creators = 1;  (richiede privilegi)
+Notes:
+- DELIMITER is a CLIENT command, not SQL. It works in the mysql CLI and MySQL
+  Workbench. In phpMyAdmin or DBeaver, set the delimiter in the program's
+  option and delete the DELIMITER lines. Many online SQL editors do not support it.
+- Parameter modes: IN (default), OUT, INOUT.
+- If creating a function gives a binary log error, you need:
+  SET GLOBAL log_bin_trust_function_creators = 1;  (requires privileges)
 
 
-24. TRIGGER, EVENTI, CURSORI
-----------------------------
+24. TRIGGERS, EVENTS, CURSORS
+-----------------------------
 -- TRIGGER
 CREATE TABLE salary_log (
     log_id     INT PRIMARY KEY AUTO_INCREMENT,
@@ -846,10 +846,10 @@ SELECT * FROM salary_log;
 SHOW TRIGGERS;
 DROP TRIGGER IF EXISTS trg_email_lower;
 
-Momento: BEFORE / AFTER. Evento: INSERT / UPDATE / DELETE.
-OLD = riga prima della modifica, NEW = riga dopo.
+Timing: BEFORE / AFTER. Event: INSERT / UPDATE / DELETE.
+OLD = row before the change, NEW = row after.
 
--- EVENTI (pianificatore)
+-- EVENTS (scheduler)
 SET GLOBAL event_scheduler = ON;
 
 CREATE EVENT ev_purge_log
@@ -860,7 +860,7 @@ SHOW EVENTS;
 ALTER EVENT ev_purge_log DISABLE;
 DROP EVENT IF EXISTS ev_purge_log;
 
--- CURSORI
+-- CURSORS
 DELIMITER //
 CREATE PROCEDURE total_payroll(OUT p_total DECIMAL(14,2))
 BEGIN
@@ -884,8 +884,8 @@ CALL total_payroll(@t);
 SELECT @t;
 
 
-25. CONTROLLO DI FLUSSO
------------------------
+25. FLOW CONTROL
+----------------
 DELIMITER //
 CREATE PROCEDURE flow_demo(IN n INT)
 BEGIN
@@ -893,23 +893,23 @@ BEGIN
     DECLARE s INT DEFAULT 0;
 
     -- IF / ELSEIF / ELSE
-    IF n < 0 THEN SELECT 'negativo';
+    IF n < 0 THEN SELECT 'negative';
     ELSEIF n = 0 THEN SELECT 'zero';
-    ELSE SELECT 'positivo';
+    ELSE SELECT 'positive';
     END IF;
 
     -- CASE
-    CASE WHEN n > 100 THEN SELECT 'grande'; ELSE SELECT 'piccolo'; END CASE;
+    CASE WHEN n > 100 THEN SELECT 'large'; ELSE SELECT 'small'; END CASE;
 
     -- WHILE
     WHILE i <= n DO SET s = s + i; SET i = i + 1; END WHILE;
-    SELECT s AS somma_da_1_a_n;
+    SELECT s AS sum_from_1_to_n;
 
     -- REPEAT
     SET i = 0;
     REPEAT SET i = i + 1; UNTIL i >= 3 END REPEAT;
 
-    -- LOOP con LEAVE (esci) / ITERATE (continua)
+    -- LOOP with LEAVE (exit) / ITERATE (continue)
     SET i = 0;
     lp: LOOP
         SET i = i + 1;
@@ -922,71 +922,71 @@ DELIMITER ;
 CALL flow_demo(5);
 DROP PROCEDURE flow_demo;
 
-Gestione degli errori:
+Error handling:
 DELIMITER //
 CREATE PROCEDURE safe_transfer(IN p_from INT, IN p_to INT, IN p_amt DECIMAL(10,2))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
-        SELECT 'Trasferimento fallito, annullato' AS msg;
+        SELECT 'Transfer failed, rolled back' AS msg;
     END;
 
     START TRANSACTION;
     UPDATE employees SET salary = salary - p_amt WHERE emp_id = p_from;
     UPDATE employees SET salary = salary + p_amt WHERE emp_id = p_to;
     IF (SELECT salary FROM employees WHERE emp_id = p_from) < 0 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Fondi insufficienti';
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Insufficient funds';
     END IF;
     COMMIT;
 END //
 DELIMITER ;
 
 
-26. VARIABILI E PREPARED STATEMENT
-----------------------------------
--- Variabili utente (valgono per tutta la sessione)
-SET @nome = 'Asha Rao';
+26. VARIABLES AND PREPARED STATEMENTS
+-------------------------------------
+-- User variables (valid for the whole session)
+SET @name = 'Asha Rao';
 SET @min_sal := 60000;
-SELECT @nome, @min_sal;
+SELECT @name, @min_sal;
 SELECT COUNT(*) INTO @n FROM employees WHERE salary > @min_sal;
 SELECT @n;
 
--- Variabili di sistema
+-- System variables
 SHOW VARIABLES LIKE 'max_connections';
 SET SESSION sql_mode = 'STRICT_ALL_TABLES';
-SET GLOBAL max_connections = 300;               -- richiede privilegi
+SET GLOBAL max_connections = 300;               -- requires privileges
 SELECT @@version, @@sql_mode, @@global.time_zone;
 
--- Variabili locali (solo dentro le routine)
+-- Local variables (only inside routines)
 -- DECLARE v INT DEFAULT 0;  SET v = 5;
 
--- Prepared statement (SQL dinamico sicuro)
+-- Prepared statements (safe dynamic SQL)
 PREPARE stmt FROM 'SELECT name, salary FROM employees WHERE dept_id = ? AND salary > ?';
 SET @d = 1, @s = 60000;
 EXECUTE stmt USING @d, @s;
 DEALLOCATE PREPARE stmt;
 
--- Nome di tabella dinamico
+-- Dynamic table name
 SET @tbl = 'employees';
 SET @sql = CONCAT('SELECT COUNT(*) AS n FROM ', @tbl);
 PREPARE s2 FROM @sql; EXECUTE s2; DEALLOCATE PREPARE s2;
 
-ATTENZIONE: usa i segnaposto ? per i valori. Non incollare mai input non fidato
-dentro l'SQL (SQL injection).
+WARNING: use ? placeholders for values. Never paste untrusted input
+into the SQL (SQL injection).
 
 
-27. TABELLE TEMPORANEE E SEQUENZE
----------------------------------
--- Tabella temporanea: visibile solo alla tua sessione, sparisce alla disconnessione
-CREATE TEMPORARY TABLE tmp_alti AS SELECT * FROM employees WHERE salary > 60000;
-SELECT * FROM tmp_alti;
-DROP TEMPORARY TABLE tmp_alti;
+27. TEMPORARY TABLES AND SEQUENCES
+----------------------------------
+-- Temporary table: visible only to your session, disappears on disconnect
+CREATE TEMPORARY TABLE tmp_high AS SELECT * FROM employees WHERE salary > 60000;
+SELECT * FROM tmp_high;
+DROP TEMPORARY TABLE tmp_high;
 
-SELECT LAST_INSERT_ID();                  -- ultimo valore auto-increment
+SELECT LAST_INSERT_ID();                  -- last auto-increment value
 ALTER TABLE departments AUTO_INCREMENT = 100;
 
-Sequenze (MySQL non le ha: usa AUTO_INCREMENT):
+Sequences (MySQL does not have them: use AUTO_INCREMENT):
 CREATE SEQUENCE seq_id START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 99999 CACHE 20;
 SELECT NEXTVAL('seq_id');                 -- PG
 SELECT seq_id.NEXTVAL FROM dual;          -- ORA
@@ -994,37 +994,37 @@ SELECT NEXT VALUE FOR seq_id;             -- SS
 ALTER SEQUENCE seq_id RESTART WITH 100;
 DROP SEQUENCE seq_id;
 
-Tabelle temporanee in altri dialetti:
+Temporary tables in other dialects:
 SS: CREATE TABLE #tmp (...)     PG: CREATE TEMP TABLE tmp (...)
 
 
-𝗣𝗔𝗥𝗧𝗘 𝟱 – 𝗔𝗠𝗠𝗜𝗡𝗜𝗦𝗧𝗥𝗔𝗭𝗜𝗢𝗡𝗘 𝗘 𝗥𝗜𝗙𝗘𝗥𝗜𝗠𝗘𝗡𝗧𝗜
+PART 5 – ADMINISTRATION AND REFERENCE
 =====================================================
 
-28. COMANDI DI AMMINISTRAZIONE E INFORMAZIONE
----------------------------------------------
-SHOW DATABASES;  SHOW TABLES;            Elenca gli oggetti
-SHOW TABLES LIKE 'emp%';                 Filtra per modello
-SHOW FULL COLUMNS FROM t;                Colonne con commenti e collation
-SHOW CREATE TABLE t;                     DDL completo
-SHOW INDEX FROM t;                       Indici
-SHOW TABLE STATUS LIKE 't';              Righe, dimensione, motore
-SHOW PROCESSLIST;                        Query in esecuzione
-KILL 123;                                Chiude una connessione per ID
-SHOW STATUS;                             Contatori del server
-SHOW VARIABLES LIKE '%x%';               Valori di configurazione
-SHOW ENGINES;                            Motori di archiviazione
-SHOW WARNINGS;  SHOW ERRORS;             Problemi dell'ultima istruzione
-SHOW GRANTS;                             I tuoi permessi
-SHOW CHARACTER SET;  SHOW COLLATION;     Codifiche
-SELECT VERSION();                        Versione del server
-SELECT USER(), CURRENT_USER();           Chi sono
-SELECT CONNECTION_ID();                  ID della connessione
-SELECT ROW_COUNT();                      Righe toccate dall'ultima istruzione
-SELECT LAST_INSERT_ID();                 Ultimo valore auto-increment
-HELP 'SELECT';                           Aiuto integrato (client mysql)
+28. ADMINISTRATION AND INFORMATION COMMANDS
+-------------------------------------------
+SHOW DATABASES;  SHOW TABLES;            List objects
+SHOW TABLES LIKE 'emp%';                 Filter by pattern
+SHOW FULL COLUMNS FROM t;                Columns with comments and collation
+SHOW CREATE TABLE t;                     Full DDL
+SHOW INDEX FROM t;                       Indexes
+SHOW TABLE STATUS LIKE 't';              Rows, size, engine
+SHOW PROCESSLIST;                        Running queries
+KILL 123;                                Closes a connection by ID
+SHOW STATUS;                             Server counters
+SHOW VARIABLES LIKE '%x%';               Configuration values
+SHOW ENGINES;                            Storage engines
+SHOW WARNINGS;  SHOW ERRORS;             Problems from the last statement
+SHOW GRANTS;                             Your permissions
+SHOW CHARACTER SET;  SHOW COLLATION;     Encodings
+SELECT VERSION();                        Server version
+SELECT USER(), CURRENT_USER();           Who am I
+SELECT CONNECTION_ID();                  Connection ID
+SELECT ROW_COUNT();                      Rows affected by the last statement
+SELECT LAST_INSERT_ID();                 Last auto-increment value
+HELP 'SELECT';                           Built-in help (mysql client)
 
--- information_schema: il catalogo si interroga come una tabella
+-- information_schema: the catalog is queried like a table
 SELECT table_name, table_rows FROM information_schema.tables
 WHERE table_schema = 'sql_cheatsheet';
 SELECT column_name, data_type, is_nullable FROM information_schema.columns
@@ -1032,77 +1032,77 @@ WHERE table_schema = 'sql_cheatsheet' AND table_name = 'employees';
 SELECT constraint_name, constraint_type FROM information_schema.table_constraints
 WHERE table_schema = 'sql_cheatsheet' AND table_name = 'employees';
 
-Altri dialetti:
+Other dialects:
 PG:  \l  \c db  \dt  \d t  \du  \q
 SS:  sp_help 't';  sp_who;  SELECT * FROM sys.tables;
 ORA: SELECT * FROM user_tables;  DESC t;
 
 
-29. PRESTAZIONI
+29. PERFORMANCE
 ---------------
 EXPLAIN SELECT * FROM employees WHERE dept_id = 1;
 EXPLAIN FORMAT=JSON SELECT * FROM employees WHERE salary > 60000;
 EXPLAIN ANALYZE SELECT * FROM employees e JOIN departments d USING (dept_id);
-                                         -- MySQL 8.0.18+, ESEGUE la query
+                                         -- MySQL 8.0.18+, EXECUTES the query
 
-ANALYZE TABLE employees;                 Aggiorna le statistiche degli indici
-OPTIMIZE TABLE employees;                Deframmenta / ricostruisce
-CHECK TABLE employees;                   Controlla
-REPAIR TABLE employees;                  Ripara (MyISAM e pochi altri)
+ANALYZE TABLE employees;                 Updates index statistics
+OPTIMIZE TABLE employees;                Defragments / rebuilds
+CHECK TABLE employees;                   Checks
+REPAIR TABLE employees;                  Repairs (MyISAM and a few others)
 
-SET profiling = 1;                       Deprecato: usa Performance Schema
+SET profiling = 1;                       Deprecated: use Performance Schema
 SHOW PROFILES;
 SHOW STATUS LIKE 'Slow_queries';
 SET GLOBAL slow_query_log = 'ON';
 SET GLOBAL long_query_time = 1;
 
-Come leggere EXPLAIN:
-type    dal migliore al peggiore: const, eq_ref, ref, range, index, ALL (scansione completa)
-key     indice realmente usato (NULL = nessuno)
-rows    righe stimate da leggere: meno è meglio
-Extra   "Using filesort" e "Using temporary" sono campanelli d'allarme
+How to read EXPLAIN:
+type    from best to worst: const, eq_ref, ref, range, index, ALL (full scan)
+key     index actually used (NULL = none)
+rows    estimated rows to read: fewer is better
+Extra   "Using filesort" and "Using temporary" are warning signs
 
-Trucchi veloci:
-- Indicizza le colonne di filtro e join.
-- Seleziona solo le colonne che servono.
-- Non usare funzioni su colonne indicizzate nel WHERE:
+Quick tricks:
+- Index the filter and join columns.
+- Select only the columns you need.
+- Do not use functions on indexed columns in the WHERE:
   WHERE YEAR(d) = 2024  ->  WHERE d >= '2024-01-01' AND d < '2025-01-01'
-- Evita i caratteri jolly iniziali: LIKE '%x'.
-- Per grandi paginazioni usa il metodo "keyset" invece di un OFFSET grande.
-- Con sottoquery grandi, EXISTS è spesso meglio di IN.
+- Avoid leading wildcards: LIKE '%x'.
+- For deep pagination use the "keyset" method instead of a large OFFSET.
+- With large subqueries, EXISTS is often better than IN.
 
 
 30. IMPORT, EXPORT, BACKUP
 --------------------------
--- Esporta in CSV (lato server: serve il privilegio FILE e la cartella di secure_file_priv)
+-- Export to CSV (server side: needs the FILE privilege and the secure_file_priv folder)
 SELECT * FROM employees
 INTO OUTFILE '/var/lib/mysql-files/employees.csv'
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n';
 
--- Importa da CSV (la tabella di destinazione deve esistere; il file di output non deve esistere già)
+-- Import from CSV (the target table must exist; the output file must not already exist)
 CREATE TABLE IF NOT EXISTS emp_copy LIKE employees;
 LOAD DATA INFILE '/var/lib/mysql-files/employees.csv'
 INTO TABLE emp_copy
 FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\n'
-IGNORE 1 LINES;                          -- salta l'intestazione
--- LOAD DATA LOCAL INFILE 'file.csv' ... -- file sul computer client (va abilitato)
+IGNORE 1 LINES;                          -- skip the header
+-- LOAD DATA LOCAL INFILE 'file.csv' ... -- file on the client computer (must be enabled)
 
 SHOW VARIABLES LIKE 'secure_file_priv';
 
-Da riga di comando (nel TERMINALE, non nel prompt SQL):
+From the command line (in the TERMINAL, not the SQL prompt):
 
 # Backup
 mysqldump -u root -p sql_cheatsheet > backup.sql
-mysqldump -u root -p --all-databases > tutto.sql
-mysqldump -u root -p --no-data sql_cheatsheet > solo_schema.sql
-mysqldump -u root -p --routines --triggers --events sql_cheatsheet > completo.sql
-mysqldump -u root -p sql_cheatsheet employees departments > due_tabelle.sql
+mysqldump -u root -p --all-databases > everything.sql
+mysqldump -u root -p --no-data sql_cheatsheet > schema_only.sql
+mysqldump -u root -p --routines --triggers --events sql_cheatsheet > full.sql
+mysqldump -u root -p sql_cheatsheet employees departments > two_tables.sql
 
-# Ripristino
+# Restore
 mysql -u root -p sql_cheatsheet < backup.sql
 mysql -u root -p -e "source backup.sql"
 
-# Eseguire una query dalla shell
+# Run a query from the shell
 mysql -u root -p -e "SELECT COUNT(*) FROM sql_cheatsheet.employees"
 
 # PostgreSQL
@@ -1110,13 +1110,13 @@ pg_dump -U postgres mydb > backup.sql
 psql -U postgres mydb < backup.sql
 
 
-31. PARTIZIONAMENTO
--------------------
+31. PARTITIONING
+----------------
 CREATE TABLE sales (
     sale_id   INT NOT NULL AUTO_INCREMENT,
     sale_date DATE NOT NULL,
     amount    DECIMAL(10,2),
-    PRIMARY KEY (sale_id, sale_date)     -- la chiave di partizione deve stare in ogni chiave unica
+    PRIMARY KEY (sale_id, sale_date)     -- the partition key must be in every unique key
 )
 PARTITION BY RANGE (YEAR(sale_date)) (
     PARTITION p2023 VALUES LESS THAN (2024),
@@ -1131,32 +1131,32 @@ ALTER TABLE sales REORGANIZE PARTITION pmax INTO (
     PARTITION p2025 VALUES LESS THAN (2026),
     PARTITION pmax  VALUES LESS THAN MAXVALUE
 );
-ALTER TABLE sales DROP PARTITION p2023;       -- elimina subito i dati di quella partizione
+ALTER TABLE sales DROP PARTITION p2023;       -- immediately deletes that partition's data
 ALTER TABLE sales TRUNCATE PARTITION p2024;
 SELECT partition_name, table_rows FROM information_schema.partitions WHERE table_name = 'sales';
 DROP TABLE sales;
 
-Tipi di partizione:
-RANGE   per intervalli di valori (date, id)
-LIST    per elenchi espliciti (VALUES IN (1,2,3))
-HASH    hash di un'espressione (distribuzione uniforme)
-KEY     hash interno di MySQL su una o più colonne
+Partition types:
+RANGE   by value ranges (dates, ids)
+LIST    by explicit lists (VALUES IN (1,2,3))
+HASH    hash of an expression (even distribution)
+KEY     MySQL's internal hash on one or more columns
 
 
-32. TIPI DI DATO
-----------------
-Interi:           TINYINT (1 byte), SMALLINT (2), MEDIUMINT (3), INT (4), BIGINT (8);
-                  aggiungi UNSIGNED per solo non negativi
-Decimali esatti:  DECIMAL(p,s) / NUMERIC(p,s)  -> da usare per il denaro
-Approssimati:     FLOAT, DOUBLE
-Booleano:         BOOLEAN / BOOL (alias di TINYINT(1)); PG ha un vero BOOLEAN; SS: BIT
-Testo fisso:      CHAR(n)
-Testo variabile:  VARCHAR(n), TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT
-Binari:           BINARY(n), VARBINARY(n), famiglia BLOB
-Data / ora:       DATE, TIME, DATETIME, TIMESTAMP, YEAR
-Altri:            ENUM('a','b'), SET('x','y'), JSON, BIT(n), POINT, GEOMETRY
+32. DATA TYPES
+--------------
+Integers:         TINYINT (1 byte), SMALLINT (2), MEDIUMINT (3), INT (4), BIGINT (8);
+                  add UNSIGNED for non-negative only
+Exact decimals:   DECIMAL(p,s) / NUMERIC(p,s)  -> use for money
+Approximate:      FLOAT, DOUBLE
+Boolean:          BOOLEAN / BOOL (alias of TINYINT(1)); PG has a true BOOLEAN; SS: BIT
+Fixed text:       CHAR(n)
+Variable text:    VARCHAR(n), TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT
+Binary:           BINARY(n), VARBINARY(n), BLOB family
+Date / time:      DATE, TIME, DATETIME, TIMESTAMP, YEAR
+Others:           ENUM('a','b'), SET('x','y'), JSON, BIT(n), POINT, GEOMETRY
 
-Prova:
+Try it:
 CREATE TABLE type_demo (
     id        BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     flag      BOOLEAN DEFAULT TRUE,
@@ -1174,75 +1174,75 @@ CREATE TABLE type_demo (
 );
 DROP TABLE type_demo;
 
-Equivalenze tra dialetti:
+Equivalents between dialects:
                 MySQL            PostgreSQL                      SQL Server    Oracle
-ID automatico   AUTO_INCREMENT   SERIAL / GENERATED AS IDENTITY  IDENTITY(1,1) GENERATED AS IDENTITY
-Testo lungo     TEXT             TEXT                            VARCHAR(MAX)  CLOB
-Intero          INT              INTEGER                         INT           NUMBER(10)
-Data e ora      DATETIME         TIMESTAMP                       DATETIME2     TIMESTAMP
-Stringa         VARCHAR          VARCHAR                         NVARCHAR      VARCHAR2
+Auto ID         AUTO_INCREMENT   SERIAL / GENERATED AS IDENTITY  IDENTITY(1,1) GENERATED AS IDENTITY
+Long text       TEXT             TEXT                            VARCHAR(MAX)  CLOB
+Integer         INT              INTEGER                         INT           NUMBER(10)
+Date and time   DATETIME         TIMESTAMP                       DATETIME2     TIMESTAMP
+String          VARCHAR          VARCHAR                         NVARCHAR      VARCHAR2
 
 
-33. DIFFERENZE TRA DIALETTI
----------------------------
-Limitare le righe:    MySQL LIMIT n | PG LIMIT n | SS TOP n / OFFSET FETCH | ORA FETCH FIRST n ROWS ONLY
-Concatenare:          MySQL CONCAT() | PG || | SS + o CONCAT() | ORA ||
-Ora attuale:          MySQL NOW() | PG NOW() | SS GETDATE() | ORA SYSDATE
-Predefinito per NULL: MySQL IFNULL | PG COALESCE | SS ISNULL | ORA NVL
-Lunghezza stringa:    MySQL LENGTH | PG LENGTH | SS LEN | ORA LENGTH
-ID automatico:        MySQL AUTO_INCREMENT | PG SERIAL | SS IDENTITY | ORA IDENTITY / sequenza
+33. DIFFERENCES BETWEEN DIALECTS
+--------------------------------
+Limit rows:           MySQL LIMIT n | PG LIMIT n | SS TOP n / OFFSET FETCH | ORA FETCH FIRST n ROWS ONLY
+Concatenate:          MySQL CONCAT() | PG || | SS + or CONCAT() | ORA ||
+Current time:         MySQL NOW() | PG NOW() | SS GETDATE() | ORA SYSDATE
+Default for NULL:     MySQL IFNULL | PG COALESCE | SS ISNULL | ORA NVL
+String length:        MySQL LENGTH | PG LENGTH | SS LEN | ORA LENGTH
+Auto ID:              MySQL AUTO_INCREMENT | PG SERIAL | SS IDENTITY | ORA IDENTITY / sequence
 Upsert:               MySQL ON DUPLICATE KEY UPDATE | PG ON CONFLICT DO UPDATE | SS MERGE | ORA MERGE
-Full outer join:      MySQL simulato con UNION | PG, SS, ORA supportato
-Differenza insiemi:   MySQL EXCEPT (8.0.31+) | PG EXCEPT | SS EXCEPT | ORA MINUS
-Unire valori:         MySQL GROUP_CONCAT | PG STRING_AGG | SS STRING_AGG | ORA LISTAGG
-Nomi tra virgolette:  MySQL `nome` | PG "nome" | SS [nome] | ORA "nome"
-Mostra tabelle:       MySQL SHOW TABLES | PG \dt | SS sys.tables | ORA user_tables
-Formato data:         MySQL DATE_FORMAT | PG TO_CHAR | SS FORMAT | ORA TO_CHAR
-Booleano:             MySQL TINYINT(1) | PG BOOLEAN | SS BIT | ORA NUMBER(1)
-Restituire la riga:   MySQL no | PG RETURNING | SS OUTPUT | ORA RETURNING INTO
-Senza maiuscole:      MySQL collation predefinita | PG ILIKE | SS collation predefinita | ORA UPPER()
+Full outer join:      MySQL simulated with UNION | PG, SS, ORA supported
+Set difference:       MySQL EXCEPT (8.0.31+) | PG EXCEPT | SS EXCEPT | ORA MINUS
+Join values:          MySQL GROUP_CONCAT | PG STRING_AGG | SS STRING_AGG | ORA LISTAGG
+Quoted names:         MySQL `name` | PG "name" | SS [name] | ORA "name"
+Show tables:          MySQL SHOW TABLES | PG \dt | SS sys.tables | ORA user_tables
+Date format:          MySQL DATE_FORMAT | PG TO_CHAR | SS FORMAT | ORA TO_CHAR
+Boolean:              MySQL TINYINT(1) | PG BOOLEAN | SS BIT | ORA NUMBER(1)
+Return the row:       MySQL no | PG RETURNING | SS OUTPUT | ORA RETURNING INTO
+Case-insensitive:     MySQL default collation | PG ILIKE | SS default collation | ORA UPPER()
 
 
-34. ORDINE DI ESECUZIONE E CATEGORIE DI COMANDI
------------------------------------------------
-Ordine LOGICO in cui il database esegue una query:
- 1. FROM / JOIN      sceglie e combina le tabelle
- 2. WHERE            filtra le righe
- 3. GROUP BY         crea i gruppi
- 4. HAVING           filtra i gruppi
- 5. SELECT           calcola colonne e alias
- 6. DISTINCT         toglie i duplicati
- 7. Funzioni finestra
- 8. ORDER BY         ordina (può usare gli alias)
- 9. LIMIT / OFFSET   riduce il risultato
+34. EXECUTION ORDER AND COMMAND CATEGORIES
+------------------------------------------
+LOGICAL order in which the database runs a query:
+ 1. FROM / JOIN      chooses and combines the tables
+ 2. WHERE            filters the rows
+ 3. GROUP BY         creates the groups
+ 4. HAVING           filters the groups
+ 5. SELECT           computes columns and aliases
+ 6. DISTINCT         removes duplicates
+ 7. Window functions
+ 8. ORDER BY         sorts (can use aliases)
+ 9. LIMIT / OFFSET   reduces the result
 
-Per questo NON puoi usare un alias del SELECT nel WHERE (non esiste ancora),
-ma puoi usarlo nell'ORDER BY. MySQL lo permette anche in GROUP BY e HAVING.
+This is why you can NOT use a SELECT alias in the WHERE (it does not exist yet),
+but you can use it in ORDER BY. MySQL also allows it in GROUP BY and HAVING.
 
-Categorie di comandi:
-DDL  Definizione dei dati     CREATE  ALTER  DROP  TRUNCATE  RENAME
-DML  Manipolazione dei dati   INSERT  UPDATE  DELETE  MERGE  REPLACE
-DQL  Interrogazione           SELECT
-DCL  Controllo accessi        GRANT  REVOKE
-TCL  Controllo transazioni    COMMIT  ROLLBACK  SAVEPOINT  START TRANSACTION
+Command categories:
+DDL  Data definition          CREATE  ALTER  DROP  TRUNCATE  RENAME
+DML  Data manipulation        INSERT  UPDATE  DELETE  MERGE  REPLACE
+DQL  Querying                 SELECT
+DCL  Access control           GRANT  REVOKE
+TCL  Transaction control      COMMIT  ROLLBACK  SAVEPOINT  START TRANSACTION
 
-Chiavi:
-Chiave primaria     Unica e non nulla, identifica la riga (una per tabella)
-Chiave esterna      Punta alla chiave primaria/unica di un'altra tabella
-Chiave unica        Nessun duplicato (i NULL sono ammessi)
-Chiave composta     Chiave fatta da 2 o più colonne
-Chiave candidata    Qualsiasi insieme di colonne che potrebbe essere la chiave primaria
-Chiave surrogata    ID artificiale (es. AUTO_INCREMENT)
+Keys:
+Primary key         Unique and non-null, identifies the row (one per table)
+Foreign key         Points to the primary/unique key of another table
+Unique key          No duplicates (NULLs are allowed)
+Composite key       Key made of 2 or more columns
+Candidate key       Any set of columns that could be the primary key
+Surrogate key       Artificial ID (e.g. AUTO_INCREMENT)
 
-DELETE, TRUNCATE e DROP:
+DELETE, TRUNCATE and DROP:
                          DELETE             TRUNCATE                  DROP
-Cosa elimina             righe scelte       tutte le righe            l'intera tabella
-WHERE                    sì                 no                        no
-Azzera auto-increment    no                 sì                        non si applica
-Attiva i trigger         sì                 no                        no
-Annullabile (rollback)   sì                 no in MySQL (sì in PG/SS) no in MySQL
-Tipo                     DML                DDL                       DDL
+What it removes          chosen rows        all rows                  the whole table
+WHERE                    yes                no                        no
+Resets auto-increment    no                 yes                       not applicable
+Fires triggers           yes                no                        no
+Can be rolled back       yes                no in MySQL (yes in PG/SS) no in MySQL
+Type                     DML                DDL                       DDL
 
 
 =====================================================
-Fine. Buono studio con l'SQL!
+The end. Happy studying SQL!
