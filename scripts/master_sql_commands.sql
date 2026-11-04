@@ -4,7 +4,8 @@
 
 **Every SQL command in one place, with code that actually runs.**
 
-![SQL](https://img.shields.io/badge/SQL-Cheat%20Sheet-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+
+    [SQL](https://img.shields.io/badge/SQL-Cheat%20Sheet-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-00758F?style=for-the-badge&logo=mysql&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-notes-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-notes-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white)
